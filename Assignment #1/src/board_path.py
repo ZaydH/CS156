@@ -23,6 +23,7 @@ class BoardPath:
         '''
         self._current_cost = 0
         self._current_loc = start_loc
+        self._path = []
         self._path.append(start_loc)
 
     def clone(self):
@@ -74,41 +75,42 @@ class BoardPath:
         """
         if (direction == "l"):
             # Verify the move does not take you off the board.
-            assert self._current_loc(0) == 0,\
+            assert self._current_loc[1] > 0,\
                 "You tried to move off the left edge of the board."
             # Update the current location
-            self._current_loc = (self._current_loc(0)-1, self._current_loc(1))
+            self._current_loc = (self._current_loc[0],
+                                 self._current_loc[1] - 1)
 
         elif (direction == "u"):
             # Verify the move does not take you off the board.
-            assert self._current_loc(1) == 0,\
+            assert self._current_loc[0] > 0,\
                 "You tried to move off the top of the board."
             # Update the current location
-            self._current_loc = (self._current_loc(0),
-                                 self._current_loc(1)-1)
+            self._current_loc = (self._current_loc[0] - 1,
+                                 self._current_loc[1])
 
         elif (direction == "r"):
-            current_row = self._current_loc(0)
+            current_row = self._current_loc[0]
             # Verify the move does not take you off the board.
-            assert self._current_loc(0) + 1 < len(self._board[current_row]),\
+            assert self._current_loc[1] + 1 < len(self._board[current_row]),\
                 "You tried to move off the right edge of the board."
             # Update the current location
-            self._current_loc = (self._current_loc(0) + 1,
-                                 self._current_loc(1))
+            self._current_loc = (self._current_loc[0],
+                                 self._current_loc[1] + 1)
 
         elif (direction == "d"):
             # Verify the move does not take you off the board.
-            assert self._current_loc(1) + 1 < len(self._board),\
+            assert self._current_loc[0] + 1 < len(self._board),\
                 "You tried to move off the bottom of the board."
             # Update the current location
-            self._current_loc = (self._current_loc(0),
-                                 self._current_loc(1) + 1)
+            self._current_loc = (self._current_loc[0] + 1,
+                                 self._current_loc[1])
 
         else:
             assert False, "Invalid move direction."
 
         # Update the path.
-        self._path.add(self._current_loc)
+        self._path.append(self._current_loc)
         # Increment the move cost.
         self._current_cost = self._current_cost + 1
 
@@ -121,8 +123,8 @@ class BoardPath:
             **True** if at the goal
             **False** otherwise
         """
-        return (self._current_loc(0) == self._goal_loc(0) and
-                self._current_loc(1) == self.goal_loc(1))
+        return (self._current_loc[0] == self._goal_loc[0] and
+                self._current_loc[1] == self.goal_loc[1])
 
     @staticmethod
     def set_goal(goal_loc):
@@ -132,7 +134,7 @@ class BoardPath:
 
         :param goal_loc: Board goal. Tuple in format (row, column)
         """
-        _goal_loc = goal_loc
+        BoardPath._goal_loc = goal_loc
 
     @staticmethod
     def set_board(board):
@@ -142,7 +144,7 @@ class BoardPath:
 
         :param board: Two dimensional board.
         """
-        _board = board
+        BoardPath._board = board
 
     def print_path(self):
         """Path Printer
@@ -157,13 +159,13 @@ class BoardPath:
         prev_col = -1
         # Iterate through each board configuration.
         for loc in self._path:
-            # Depending on if this is the inital setup or not
+            # Depending on if this is the initial setup or not
             # Process the next print out.
             if (step_numb == 0):
                 print "Initial:"
             else:
                 temp_board[prev_row][prev_col] = "."
-                temp_board[loc(0)][loc(1)] = "@"
+                temp_board[loc[0]][loc[1]] = "@"
                 # Print the step number
                 print ""
                 print "Step {0}:".format(step_numb)
@@ -174,7 +176,12 @@ class BoardPath:
                 board_str = "".join(board_row)
                 print board_str
 
+            #  Store the previous location for next time through the loop.
+            prev_row = loc[0]
+            prev_col = loc[1]
+            step_numb += 1
+
         #  Check if the target is reached
-        final_loc = self._path(len(self._path) - 1)
+        final_loc = self._path[len(self._path) - 1]
         if (final_loc == self._goal_loc):
             print "Problem Solved! I had some noodles!"

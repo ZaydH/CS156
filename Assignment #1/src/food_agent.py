@@ -119,3 +119,8 @@ traversed_board = original_board
 # Store the board information
 BoardPath.set_board(original_board)
 BoardPath.set_goal(goal_loc)
+initial_loc = BoardPath(start_loc)
+initial_loc.move("r")
+initial_loc.move("r")
+initial_loc.move("d")
+initial_loc.print_path()

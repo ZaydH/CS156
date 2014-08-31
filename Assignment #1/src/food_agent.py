@@ -9,8 +9,9 @@ Team Member #2: Muffins Hammoudeh
         while I worked so she deserves credit).
 '''
 
-import sys
+import heapq
 from board_path import BoardPath
+import sys
 
 
 # def build_game_board(filename):
@@ -104,6 +105,35 @@ def parse_board_file(filename):
 
     return (board, start_loc, goal_loc)
 #  def parse_board_file(filename)
+
+
+def perform_a_star_algorithm(board, start_loc, goal_loc, heuristic):
+    # Store the board as it is traversed.
+    traversed_board = board
+
+    # Store the board information
+    BoardPath.set_board(board)
+    BoardPath.set_goal(goal_loc)
+    BoardPath.set_goal(goal_loc)
+
+    # Build the priority queue.
+    priority_queue = []
+
+    #  Create the starting point for the priority queue
+    initial_loc = BoardPath(start_loc)
+    heapq.heappush(priority_queue, initial_loc)
+
+    #  Continue iterating through the priority queue until the shortest cost
+    #  path is found or the queue is empty.
+    while len(priority_queue) > 0:
+        path = heapq.heappop(priority_queue)
+        #  If at the goal, you are done.
+        if(path.is_at_goal()):
+            path.print_path()
+            sys.exit()
+
+        
+    return None
 
 
 #  Ensure a sufficient number of input arguments.

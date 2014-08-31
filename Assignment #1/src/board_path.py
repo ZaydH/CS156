@@ -105,9 +105,14 @@ class BoardPath:
             # Update the current location
             self._current_loc = (self._current_loc[0] + 1,
                                  self._current_loc[1])
-
         else:
             assert False, "Invalid move direction."
+
+        # Ensure the move is valid.
+        current_row = self._current_loc[0]
+        current_col = self._current_loc[1]
+        assert BoardPath._board[current_row][current_col] != "#",\
+            "You moved into a wall."
 
         # Update the path.
         self._path.append(self._current_loc)

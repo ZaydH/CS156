@@ -14,10 +14,10 @@ import sys
 from board_path import BoardPath
 
 
-# """
-# Function used to create a board file.
-# """
 # def build_game_board(filename):
+#     """
+#     Function used to create a board file.
+#     """
 #     board_file = open(filename, "w")
 #     board_file.write("@..#\n")
 #     board_file.write("#.%#")
@@ -26,6 +26,22 @@ from board_path import BoardPath
 #
 #
 # build_game_board("test.txt")
+#
+#
+# def build_game_board2(filename):
+#     """
+#     Function used to create a board file.
+#     """
+#     board_file = open(filename, "w")
+#     board_file.write(".......\n")
+#     board_file.write(".#####.\n")
+#     board_file.write(".#.....\n")
+#     board_file.write(".#.###.\n")
+#     board_file.write(".#.@.#%\n")
+#     board_file.write(".###.##\n")
+#     board_file.write("......#")
+#     board_file.close()
+# build_game_board2("test2.txt")
 
 
 def parse_board_file(filename):
@@ -120,7 +136,7 @@ traversed_board = original_board
 BoardPath.set_board(original_board)
 BoardPath.set_goal(goal_loc)
 initial_loc = BoardPath(start_loc)
-initial_loc.move("r")
-initial_loc.move("r")
+initial_loc.move("d")
+initial_loc.move("u")
 initial_loc.move("d")
 initial_loc.print_path()

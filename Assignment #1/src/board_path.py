@@ -124,6 +124,26 @@ class BoardPath:
         return (self._current_loc(0) == self._goal_loc(0) and
                 self._current_loc(1) == self.goal_loc(1))
 
+    @staticmethod
+    def set_goal(goal_loc):
+        """Goal Setter
+
+        This function sets the goal for the board.
+
+        :param goal_loc: Board goal. Tuple in format (row, column)
+        """
+        _goal_loc = goal_loc
+
+    @staticmethod
+    def set_board(board):
+        """Board Setter
+
+        This function stores the board configuration.
+
+        :param board: Two dimensional board.
+        """
+        _board = board
+
     def print_path(self):
         """Path Printer
 

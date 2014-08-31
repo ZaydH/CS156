@@ -11,7 +11,7 @@ Team Member #2: Muffins Hammoudeh
 '''
 
 import sys
-import board_path
+from board_path import BoardPath
 
 
 # """
@@ -116,3 +116,6 @@ if (heuristic != "manhattan" and
 
 # Store the board as it is traversed.
 traversed_board = original_board
+# Store the board information
+BoardPath.set_board(original_board)
+BoardPath.set_goal(goal_loc)

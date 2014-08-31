@@ -1,3 +1,15 @@
+'''
+Created on Aug 30, 2014
+
+@author: Zayd Hammoudeh
+
+Team Member #1: Zayd Hammoudeh (009418877)
+Team Member #2: Muffins Hammoudeh
+        (No student ID - she's a cat but was here with me
+        while I worked so she deserves credit).
+
+'''
+
 import sys
 
 
@@ -100,7 +112,6 @@ if (heuristic != "manhattan" and
 
 # Parse the board file.
 [original_board, start_loc, goal_loc] = parse_board_file(board_file_path)
-
 
 # Store the board as it is traversed.
 traversed_board = original_board

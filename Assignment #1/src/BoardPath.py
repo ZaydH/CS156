@@ -4,12 +4,14 @@ Created on Aug 30, 2014
 @author: Zayd Hammoudeh
 '''
 
-import sys
+from math import sqrt
 
 
 class BoardPath:
-    """
-    classdocs
+    """Board Path Class
+
+    This class manages a path through the board.
+
     """
     #  These are the class "static" style variables.
     _goal_loc = ()
@@ -45,7 +47,20 @@ class BoardPath:
         :returns: A* Distance using Manhattan distance.
         """
         return self._current_cost + abs(self._current_loc(0) - self._goal_loc(0)) +\
-            abs(self._current_loc(1) - self._goal_loc(1))  # Y Difference
+            abs(self._current_loc(1) - self._goal_loc(1))
+
+    def calculate_euclidean_dist(self):
+        """Manhattan Distance Calculator
+
+        Calculates difference between current location and\
+        the goal location using Manhattan distance.
+
+        :returns: A* Distance using Manhattan distance.
+        """
+        x_dist = self._current_loc(0) - self._goal_loc(0)
+        y_dist = self._current_loc(1) - self._goal_loc(1)
+        # Note ** is power operator in Python
+        return self._current_cost + sqrt(x_dist**2 + y_dist**2)
 
     def move(self, direction):
         """Mover Function
@@ -59,19 +74,15 @@ class BoardPath:
         """
         if (direction == "l"):
             # Verify the move does not take you off the board.
-            if(self._current_loc(0) == 0):
-                print "Error: You tried to move off the left edge of the board."\
-                    "Self Destructing."
-                sys.exit()
+            assert self._current_loc(0) == 0,\
+                "You tried to move off the left edge of the board."
             # Update the current location
             self._current_loc = (self._current_loc(0)-1, self._current_loc(1))
 
         elif (direction == "u"):
             # Verify the move does not take you off the board.
-            if(self._current_loc(1) == 0):
-                print "Error: You tried to move off the top of the board."\
-                    "Self Destructing."
-                sys.exit()
+            assert self._current_loc(1) == 0,\
+                "You tried to move off the top of the board."
             # Update the current location
             self._current_loc = (self._current_loc(0),
                                  self._current_loc(1)-1)
@@ -80,18 +91,70 @@ class BoardPath:
             current_row = self._current_loc(0)
             # Verify the move does not take you off the board.
             assert self._current_loc(0) + 1 < len(self._board[current_row]),\
-                "Error: You tried to move off the right edge of the board."\
-                "Self Destructing."
-            
+                "You tried to move off the right edge of the board."
             # Update the current location
             self._current_loc = (self._current_loc(0) + 1,
-                                 self._current_loc(1)-1)
-        else
-            print "Error: You tried to move off the right edge of the board."\
-                "Self Destructing."
-            sys.exit()
+                                 self._current_loc(1))
+
+        elif (direction == "d"):
+            # Verify the move does not take you off the board.
+            assert self._current_loc(1) + 1 < len(self._board),\
+                "You tried to move off the bottom of the board."
+            # Update the current location
+            self._current_loc = (self._current_loc(0),
+                                 self._current_loc(1) + 1)
+
+        else:
+            assert False, "Invalid move direction."
 
         # Update the path.
         self._path.add(self._current_loc)
         # Increment the move cost.
         self._current_cost = self._current_cost + 1
+
+    def is_at_goal(self):
+        """Goal Checker
+
+        This function checks if the goal has been reached.
+
+        :returns:
+            **True** if at the goal
+            **False** otherwise
+        """
+        return (self._current_loc(0) == self._goal_loc(0) and
+                self._current_loc(1) == self.goal_loc(1))
+
+    def print_path(self):
+        """Path Printer
+
+        This function prints the object's path through the path to the console
+
+        :returns: Nothing.
+        """
+        temp_board = self._board
+        step_numb = 0
+        prev_row = -1
+        prev_col = -1
+        # Iterate through each board configuration.
+        for loc in self._path:
+            # Depending on if this is the inital setup or not
+            # Process the next print out.
+            if (step_numb == 0):
+                print "Initial:"
+            else:
+                temp_board[prev_row][prev_col] = "."
+                temp_board[loc(0)][loc(1)] = "@"
+                # Print the step number
+                print ""
+                print "Step {0}:".format(step_numb)
+
+            #  Print the board
+            for board_row in temp_board:
+                # Build the string from the array then print it
+                board_str = "".join(board_row)
+                print board_str
+
+        #  Check if the target is reached
+        final_loc = self._path(len(self._path) - 1)
+        if (final_loc == self._goal_loc):
+            print "Problem Solved! I had some noodles!"

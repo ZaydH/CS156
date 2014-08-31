@@ -36,7 +36,7 @@ class BoardPath:
         other = BoardPath()
         #  Copy the object variables
         other._current_cost = self._current_cost
-        other._path = self._path
+        other._path = self._path[:]
         other._current_loc = self._current_loc
         return other
 
@@ -59,7 +59,7 @@ class BoardPath:
         :returns: Distance using the specified or class heuristic function.
         """
         # If no heuristic is specified, used the default
-        if(heuristic):
+        if(heuristic == ""):
             heuristic = BoardPath._heuristic
 
         if(heuristic == "manhattan"):
@@ -79,8 +79,8 @@ class BoardPath:
 
         :returns: A* Distance using Manhattan distance.
         """
-        return self._current_cost + abs(self._current_loc(0) - self._goal_loc(0)) +\
-            abs(self._current_loc(1) - self._goal_loc(1))
+        return self._current_cost + abs(self._current_loc[0] - self._goal_loc[0]) +\
+            abs(self._current_loc[1] - self._goal_loc[1])
 
     def calculate_euclidean_dist(self):
         """Euclidean Distance Calculator
@@ -93,8 +93,8 @@ class BoardPath:
 
         :returns: A* Distance using Euclidean distance.
         """
-        x_dist = self._current_loc(0) - self._goal_loc(0)
-        y_dist = self._current_loc(1) - self._goal_loc(1)
+        x_dist = self._current_loc[0] - self._goal_loc[0]
+        y_dist = self._current_loc[1] - self._goal_loc[1]
         # Note ** is power operator in Python
         return self._current_cost + sqrt(x_dist**2 + y_dist**2)
 
@@ -107,8 +107,8 @@ class BoardPath:
         :returns: A* Distance using Zayd's distance heuristic
         """
         return -1
-    
-    def is_move_valid(self, direction):
+
+    def is_move_valid(self, direction, reference_board=None):
         """Mover Checker
 
         Verifies whether a move is valid for a given path.
@@ -122,33 +122,63 @@ class BoardPath:
         """
         # Verify a left move does not take you off the board.
         if (direction == "l"):
-            if (self._current_loc[1] > 0):
-                return True
-            else:
+            if (self._current_loc[1] == 0):
                 return False
         # Verify an up move does not take you off the board.
         elif (direction == "u"):
             # Verify the move does not take you off the board.
-            if (self._current_loc[0] > 0):
-                return True
-            else:
+            if (self._current_loc[0] == 0):
                 return False
         # Verify a right move does not take you off the board.
         elif (direction == "r"):
             current_row = self._current_loc[0]
-            if (self._current_loc[1] + 1 < len(self._board[current_row])):
-                return True
-            else:
+            if (self._current_loc[1] + 1 == len(self._board[current_row])):
                 return False
         # Verify a down move does not take you off the board.
         elif (direction == "d"):
-            if (self._current_loc[0] + 1 < len(self._board)):
-                return True
-            else:
+            if (self._current_loc[0] + 1 == len(self._board)):
                 return False
         else:
             assert False, "Invalid move direction."
-        return False
+
+        #  Get the new location for a move in the specified direction.
+        new_location = self._calculate_move_location(direction)
+        new_row = new_location[0]
+        new_col = new_location[1]
+        #  Verify the space is available
+        if(reference_board is None):
+            return BoardPath._board[new_row][new_col] != "#"
+        else:
+            return reference_board[new_row][new_col] != "#"
+
+    def _calculate_move_location(self, direction):
+        """Move Location Calculator
+
+        Calculates the new location for a move in the specified direction.
+
+        :param direction: String specifying the move direction.
+            Possible values for direction are:
+                * u - Moves one space up.
+                * d - Moves one space down.
+                * l - Moves one space left.
+                * r - Moves one space right.
+
+        :returns: Tuple: Location for the next move. If the direction
+            is invalid, it returns (-1,-1)
+        """
+        # Calculate the new location for a left move
+        if (direction == "l"):
+            return (self._current_loc[0], self._current_loc[1] - 1)
+        # Calculate the new location for an up move
+        elif (direction == "u"):
+            return (self._current_loc[0] - 1, self._current_loc[1])
+        # Calculate the new location for a right move
+        elif (direction == "r"):
+            return (self._current_loc[0], self._current_loc[1] + 1)
+        # Calculate the new location for a down move
+        elif (direction == "d"):
+            return (self._current_loc[0] + 1, self._current_loc[1])
+        return (-1, -1)
 
     def move(self, direction):
         """Mover Function
@@ -163,35 +193,9 @@ class BoardPath:
                 * r - Moves one space right.
         """
         #  Ensure the move is valid
-        assert self.is_move_valid(direction),\
-            "Invalid Move. Would have moved off the board."
-
-        # Update the current location by moving left.
-        if (direction == "l"):
-            self._current_loc = (self._current_loc[0],
-                                 self._current_loc[1] - 1)
-        # Update the current location by moving up.
-        elif (direction == "u"):
-            self._current_loc = (self._current_loc[0] - 1,
-                                 self._current_loc[1])
-        # Update the current location by moving right.
-        elif (direction == "r"):
-            self._current_loc = (self._current_loc[0],
-                                 self._current_loc[1] + 1)
-        # Update the current location by moving down.
-        elif (direction == "d"):
-            # Update the current location
-            self._current_loc = (self._current_loc[0] + 1,
-                                 self._current_loc[1])
-        else:
-            assert False, "Invalid move direction."
-
-        # Ensure the move is valid.
-        current_row = self._current_loc[0]
-        current_col = self._current_loc[1]
-        assert BoardPath._board[current_row][current_col] != "#",\
-            "You moved into a wall."
-
+        assert self.is_move_valid(direction), "Tried to make an invalid move"
+        #  Calculate the move location.
+        self._current_loc = self._calculate_move_location(direction)
         # Update the path.
         self._path.append(self._current_loc)
         # Increment the move cost.
@@ -206,8 +210,8 @@ class BoardPath:
             **True** if at the goal
             **False** otherwise
         """
-        return (self._current_loc[0] == self._goal_loc[0] and
-                self._current_loc[1] == self.goal_loc[1])
+        return (self._current_loc[0] == BoardPath._goal_loc[0] and
+                self._current_loc[1] == BoardPath._goal_loc[1])
 
     @staticmethod
     def set_goal(goal_loc):

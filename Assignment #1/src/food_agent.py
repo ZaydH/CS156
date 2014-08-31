@@ -42,6 +42,16 @@ import sys
 #     board_file.write("......#")
 #     board_file.close()
 # build_game_board2("test2.txt")
+#
+#
+# def build_game_board3(filename):
+#     """
+#     Function used to create a board file.
+#     """
+#     board_file = open(filename, "w")
+#     board_file.write("@#%")
+#     board_file.close()
+# build_game_board3("test3.txt")
 
 
 def parse_board_file(filename):
@@ -107,21 +117,25 @@ def parse_board_file(filename):
 #  def parse_board_file(filename)
 
 
-def perform_a_star_algorithm(board, start_loc, goal_loc, heuristic):
-    # Store the board as it is traversed.
-    traversed_board = board
+def perform_a_star_algorithm_search(board, start_loc, goal_loc, heuristic):
+
+    # Store the board as it is traversed. Must do a deep copy
+    traversed_board = []
+    for board_row in board:
+        traversed_board.append(list(board_row))
 
     # Store the board information
     BoardPath.set_board(board)
     BoardPath.set_goal(goal_loc)
-    BoardPath.set_goal(goal_loc)
+    BoardPath.set_heuristic(heuristic)
 
     # Build the priority queue.
     priority_queue = []
 
-    #  Create the starting point for the priority queue
-    initial_loc = BoardPath(start_loc)
-    heapq.heappush(priority_queue, initial_loc)
+    #  Queue the starting point of the search
+    heapq.heappush(priority_queue, BoardPath(start_loc))
+    # Mark the starting point checked
+    traversed_board[start_loc[0]][start_loc[1]] = "#"
 
     #  Continue iterating through the priority queue until the shortest cost
     #  path is found or the queue is empty.
@@ -132,7 +146,20 @@ def perform_a_star_algorithm(board, start_loc, goal_loc, heuristic):
             path.print_path()
             sys.exit()
 
-        
+        #  Specify the valid move directions
+        move_dir = ["r", "d", "l", "u"]
+        #  Iterate through the move directions and valid moves
+        for direction in move_dir:
+            if (path.is_move_valid(direction, traversed_board)):
+                # Move is valid so add this path to the priority queue
+                new_path = path.clone()
+                new_path.move(direction)
+                heapq.heappush(priority_queue, new_path)
+
+                # Mark the space for this space as now blocked.
+                new_location = new_path.get_current_location()
+                traversed_board[new_location[0]][new_location[1]] = "#"
+    # Return since no path was found.
     return None
 
 
@@ -159,13 +186,4 @@ if (heuristic != "manhattan" and
 # Parse the board file.
 [original_board, start_loc, goal_loc] = parse_board_file(board_file_path)
 
-# Store the board as it is traversed.
-traversed_board = original_board
-# Store the board information
-BoardPath.set_board(original_board)
-BoardPath.set_goal(goal_loc)
-initial_loc = BoardPath(start_loc)
-initial_loc.move("d")
-initial_loc.move("u")
-initial_loc.move("d")
-initial_loc.print_path()
+perform_a_star_algorithm_search(original_board, start_loc, goal_loc, heuristic)

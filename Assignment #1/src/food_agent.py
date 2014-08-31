@@ -5,9 +5,8 @@ Created on Aug 30, 2014
 
 Team Member #1: Zayd Hammoudeh (009418877)
 Team Member #2: Muffins Hammoudeh
-        (No student ID - she's a cat but was here with me
+        (No student ID - she's my cat but was here with me
         while I worked so she deserves credit).
-
 '''
 
 import sys
@@ -91,16 +90,16 @@ def parse_board_file(filename):
         row = row + 1
     # Ensure a valid starting location was specified in the board file.
     if (start_loc[0] == -1 and start_loc[1] == -1):
-        print "No valid starting location in this puzzle, which makes \
-            it unsolvable."
-        print "That is too sad.  I must quit."
+        # print "No valid starting location in this puzzle, which " + \
+        #     "makes it unsolvable."
+        # print "That is too sad.  I must quit."
         sys.exit()  # Exit the program
 
     # Ensure a valid goal location was specified in the board file.
     if (goal_loc[0] == -1 and goal_loc[1] == -1):
-        print "No valid goal location in this puzzle making it unsolvable."
-        print "This is so sad. I must quit. This hurts me as \
-            much as it hurts you."
+        # print "No valid goal location in this puzzle making it unsolvable."
+        # print "This is so sad. I must quit. This hurts me as " + \
+        #     "much as it hurts you."
         sys.exit()  # Exit the program
 
     return (board, start_loc, goal_loc)
@@ -123,8 +122,8 @@ heuristic = sys.argv[2]
 if (heuristic != "manhattan" and
         heuristic != "euclidean" and
         heuristic != "made_up"):
-    print "Invalid heuristics function."
-    "That is too sad. I must quit. This hurts me as much as it hurts you."
+    # print "Invalid heuristics function."
+    # "That is too sad. I must quit. This hurts me as much as it hurts you."
     sys.exit()  # Exit the program
 
 # Parse the board file.

@@ -11,6 +11,7 @@ Team Member #2: Muffins Hammoudeh
 '''
 
 import sys
+import board_path
 
 
 # """

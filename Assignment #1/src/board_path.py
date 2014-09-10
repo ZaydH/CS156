@@ -14,11 +14,12 @@ class BoardPath:
 
     """
     #  These are the class "static" style variables.
-    _goal_loc = ()
-    _board = []
+    _goal_loc = None
+    _untraversed_board = []
     _heuristic = ""
+    _traversed_board = []
 
-    def __init__(self, start_loc=(-1, -1)):
+    def __init__(self, start_loc):
         '''
         Constructor
         '''
@@ -79,8 +80,8 @@ class BoardPath:
 
         :returns: A* Distance using Manhattan distance.
         """
-        return self._current_cost + abs(self._current_loc[0] - self._goal_loc[0]) +\
-            abs(self._current_loc[1] - self._goal_loc[1])
+        return self._current_cost + abs(self._current_loc.get_row() - self._goal_loc.get_row()) +\
+            abs(self._current_loc.get_column() - self._goal_loc.get_column())
 
     def calculate_euclidean_dist(self):
         """Euclidean Distance Calculator
@@ -93,8 +94,8 @@ class BoardPath:
 
         :returns: A* Distance using Euclidean distance.
         """
-        x_dist = self._current_loc[0] - self._goal_loc[0]
-        y_dist = self._current_loc[1] - self._goal_loc[1]
+        x_dist = self._current_loc.get_row() - self._goal_loc.get_row()
+        y_dist = self._current_loc.get_column() - self._goal_loc.get_column()
         # Note ** is power operator in Python
         return self._current_cost + sqrt(x_dist**2 + y_dist**2)
 
@@ -106,7 +107,74 @@ class BoardPath:
 
         :returns: A* Distance using Zayd's distance heuristic
         """
-        return -1
+
+        # Ensure if current state equals goal, cost is only the current cost
+        if self._goal_loc == self._current_loc:
+            return self._current_cost
+
+        # Start with the current cost so far as the foundation of A*
+        heurstic_distance = self._current_cost
+
+        # Distance is at least the Manhattan distance as cannot move diagonal
+        manhattan_distance = self.calculate_manhattan_dist()
+
+        # Update heuristic distance with minimum additional cost.
+        heurstic_distance += manhattan_distance
+
+        # In case where all neighboring spaces are blocked or already
+        # traversed, then set the path cost prohibitively large so it is
+        # given minimum priority.
+        if not (self.is_move_valid("d", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("u", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("l", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("r", BoardPath._traversed_board)):
+            # Total board area is sufficient as a prohibitive distance
+            board_length = len(BoardPath._traversed_board)
+            board_width = len(BoardPath._traversed_board[0])
+            heurstic_distance += board_length * board_width
+            return heurstic_distance
+
+        # If all next steps that load directly to the goal are blocked, then
+        # it takes at least two additional moves to get around it so add two
+        # to the heuristic distance to include that cost.
+        if self._is_all_direct_next_steps_blocked(BoardPath._traversed_board):
+            heurstic_distance += 2
+
+        # Return heuristic distance
+        return heurstic_distance
+
+    def _is_all_direct_next_paths_blocked(self, reference_board=None):
+        """Direct Blocked Path Checker
+        """
+        # Use untraversed board if none is specified
+        if reference_board is None:
+            reference_board = BoardPath._untraversed_board
+
+        # Case #1 - Goal and Current Location in the Same Row
+        if self._current_loc.get_row() == self._goal_loc.get_row():
+            # Case 1A - Need to move left but path is blocked
+            if self._current_loc.get_column() > self._goal_loc.get_column() and\
+                    not self.is_move_valid("l", reference_board):
+                return True
+            # Case 1B - Need to move left but path is blocked
+            elif self._current_loc.get_column() < self._goal_loc.get_column() and\
+                    not self.is_move_valid("r", reference_board):
+                return True
+            else:
+                return False
+
+        # Case #2 - Goal and Current Location in the Same Row
+        if self._current_loc.get_column() == self._goal_loc.get_column():
+            # Case 2A - Need to move left but path is blocked
+            if self._current_loc.get_row() > self._goal_loc.get_row() and\
+                    not self.is_move_valid("u", reference_board):
+                return True
+            # Case 1B - Need to move left but path is blocked
+            elif self._current_loc.get_row() < self._goal_loc.get_row() and\
+                    not self.is_move_valid("d", reference_board):
+                return True
+            else:
+                return False
 
     def is_move_valid(self, direction, reference_board=None):
         """Mover Checker
@@ -131,23 +199,24 @@ class BoardPath:
                 return False
         # Verify a right move does not take you off the board.
         elif (direction == "r"):
-            current_row = self._current_loc[0]
-            if (self._current_loc[1] + 1 == len(self._board[current_row])):
+            current_row = self._current_loc.get_row()
+            max_column_number = len(self._untraversed_board[current_row])
+            if self._current_loc.get_column() + 1 == max_column_number:
                 return False
         # Verify a down move does not take you off the board.
         elif (direction == "d"):
-            if (self._current_loc[0] + 1 == len(self._board)):
+            if self._current_loc.get_row() + 1 == len(self._untraversed_board):
                 return False
         else:
             assert False, "Invalid move direction."
 
         #  Get the new location for a move in the specified direction.
         new_location = self._calculate_move_location(direction)
-        new_row = new_location[0]
-        new_col = new_location[1]
+        new_row = new_location.get_row()
+        new_col = new_location.get_column()
         #  Verify the space is available
         if(reference_board is None):
-            return BoardPath._board[new_row][new_col] != "#"
+            return BoardPath._untraversed_board[new_row][new_col] != "#"
         else:
             return reference_board[new_row][new_col] != "#"
 
@@ -163,9 +232,12 @@ class BoardPath:
                 * l - Moves one space left.
                 * r - Moves one space right.
 
-        :returns: Tuple: Location for the next move. If the direction
-            is invalid, it returns (-1,-1)
+        :returns: Location: Location for the next move. If the direction
+            is invalid, it returns the default location object
         """
+
+        new_location = Location()
+
         # Calculate the new location for a left move
         if (direction == "l"):
             return (self._current_loc[0], self._current_loc[1] - 1)
@@ -210,8 +282,8 @@ class BoardPath:
             **True** if at the goal
             **False** otherwise
         """
-        return (self._current_loc[0] == BoardPath._goal_loc[0] and
-                self._current_loc[1] == BoardPath._goal_loc[1])
+        return self._current_loc.get_row() == BoardPath._goal_loc.get_row() and \
+            self._current_loc.get_column() == BoardPath._goal_loc.get_column()
 
     @staticmethod
     def set_goal(goal_loc):
@@ -219,19 +291,29 @@ class BoardPath:
 
         This function sets the goal for the board.
 
-        :param goal_loc: Board goal. Tuple in format (row, column)
+        :param goal_loc: Board goal. Location object.
         """
         BoardPath._goal_loc = goal_loc
 
     @staticmethod
-    def set_board(board):
-        """Board Setter
+    def set_untraversed_board(board):
+        """Untraversed Board Setter
 
-        This function stores the board configuration.
+        This function stores the untraversed board configuration.
 
         :param board: Two dimensional board.
         """
-        BoardPath._board = board
+        BoardPath._untraversed_board = board
+
+    @staticmethod
+    def set_traversed_board(board):
+        """Traversed Board Setter
+
+        This function stores the traversed board configuration.
+
+        :param board: Two dimensional board.
+        """
+        BoardPath._traversed_board = board
 
     @staticmethod
     def set_heuristic(heuristic):
@@ -251,7 +333,7 @@ class BoardPath:
 
         :returns: Nothing.
         """
-        temp_board = self._board
+        temp_board = self._untraversed_board
         step_numb = 0
         prev_row = -1
         prev_col = -1
@@ -293,3 +375,63 @@ class BoardPath:
             False otherwise.
         """
         return self.get_distance() < other.get_distance()
+
+
+'''
+Created on Sep 10, 2014
+
+@author: Zayd Hammoudeh
+'''
+
+
+class Location:
+
+    def __init__(self, row_number=-1, column_number=-1):
+        '''
+        Constructor
+
+        :param row_number: Integer Row Number of location
+        :param column_number: Integer Column Number of location
+        '''
+        _row_number = row_number
+        _column_number = column_number
+
+    def get_row(self):
+        """Row Number Accessor
+
+        Accessor to get the row number of this location.
+
+        :returns: Integer row number of this location
+        """
+        return self._row_number
+
+    def get_column(self):
+        """Column Number Accessor
+
+        Accessor to get the column number of this location.
+
+        :returns: Integer column number of this location
+        """
+        return self._column_number
+
+    def is_valid(self):
+        """Valid Location Checker
+
+        Checks whether this location is valid.
+
+        :returns: True if a valid location and False otherwise
+        """
+        if self.get_row() != -1 and self.get_column() != -1:
+            return True
+        else:
+            return False
+
+    def __eq__(self, other):
+        """
+        Special function for == operator
+        """
+        # Ensure same class and values match
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False

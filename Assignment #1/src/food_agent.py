@@ -11,6 +11,7 @@ Team Member #2: Muffins Hammoudeh
 
 import heapq
 from board_path import BoardPath
+from board_path import Location
 import sys
 
 
@@ -77,8 +78,8 @@ def parse_board_file(filename):
     board = []
     row = 0
 
-    start_loc = (-1, -1)  # If valid start location exist, this is overwritten
-    goal_loc = (-1, -1)  # If a valid goal location exist, this is overwritten
+    start_loc = Location()  # If valid start location exist this is overwritten
+    goal_loc = Location()  # If a valid goal location exist this is overwritten
 
     #  Create the board
     for line in file_lines:
@@ -92,40 +93,39 @@ def parse_board_file(filename):
                 embedded_array.append(character)
                 # Parse for special characters
                 if character == "@":
-                    start_loc = (row, col)
+                    start_loc = Location(row, col)
                 if character == "%":
-                    goal_loc = (row, col)
+                    goal_loc = Location(row, col)
 
         # Append the board row to the board and increment the row counter
         board.append(embedded_array)
         row = row + 1
     # Ensure a valid starting location was specified in the board file.
-    if (start_loc[0] == -1 and start_loc[1] == -1):
-        # print "No valid starting location in this puzzle, which " + \
-        #     "makes it unsolvable."
-        # print "That is too sad.  I must quit."
+    if (not start_loc.is_valid()):
         sys.exit()  # Exit the program
 
     # Ensure a valid goal location was specified in the board file.
-    if (goal_loc[0] == -1 and goal_loc[1] == -1):
-        # print "No valid goal location in this puzzle making it unsolvable."
-        # print "This is so sad. I must quit. This hurts me as " + \
-        #     "much as it hurts you."
+    if (not goal_loc.is_valid()):
         sys.exit()  # Exit the program
 
     return (board, start_loc, goal_loc)
 #  def parse_board_file(filename)
 
 
-def perform_a_star_algorithm_search(board, start_loc, goal_loc, heuristic):
+def perform_a_star_algorithm_search(untraversed_board, start_loc, goal_loc,
+                                    heuristic):
+    """A* Algorithm
 
+    This function runs the A* algorithm on the specified untraversed board with
+    specified start and goal locations and heuristic function name.
+    """
     # Store the board as it is traversed. Must do a deep copy
     traversed_board = []
-    for board_row in board:
+    for board_row in untraversed_board:
         traversed_board.append(list(board_row))
 
     # Store the board information
-    BoardPath.set_board(board)
+    BoardPath.set_untraversed_board(untraversed_board)
     BoardPath.set_goal(goal_loc)
     BoardPath.set_heuristic(heuristic)
 
@@ -159,15 +159,14 @@ def perform_a_star_algorithm_search(board, start_loc, goal_loc, heuristic):
                 # Mark the space for this space as now blocked.
                 new_location = new_path.get_current_location()
                 traversed_board[new_location[0]][new_location[1]] = "#"
+                # Update the traversed board for the BoardPath class
+                BoardPath.set_traversed_board(traversed_board)
     # Return since no path was found.
     return None
 
 
-#  Ensure a sufficient number of input arguments.
+#  Ensure a sufficient number of input arguments are specified.
 if len(sys.argv) != 2 + 1:  # First argument is the script itself
-    print "The function expects requires exactly two input arguments."
-    print "You specified " + str(len(sys.argv)-1) + " input arguments."
-    print "This is so sad. I must quit. This hurts me as much as it hurts you."
     sys.exit()  # Exit the program
 
 

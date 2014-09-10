@@ -235,22 +235,22 @@ class BoardPath:
         :returns: Location: Location for the next move. If the direction
             is invalid, it returns the default location object
         """
-
-        new_location = Location()
+        current_row = self._current_loc.get_row()
+        current_column = self._current_loc.get_column()
 
         # Calculate the new location for a left move
         if (direction == "l"):
-            return (self._current_loc[0], self._current_loc[1] - 1)
+            return Location(current_row, current_column - 1)
         # Calculate the new location for an up move
         elif (direction == "u"):
-            return (self._current_loc[0] - 1, self._current_loc[1])
+            return Location(current_row - 1, current_column)
         # Calculate the new location for a right move
         elif (direction == "r"):
-            return (self._current_loc[0], self._current_loc[1] + 1)
+            return Location(current_row, current_column + 1)
         # Calculate the new location for a down move
         elif (direction == "d"):
-            return (self._current_loc[0] + 1, self._current_loc[1])
-        return (-1, -1)
+            return (current_row + 1, current_column)
+        return Location()
 
     def move(self, direction):
         """Mover Function

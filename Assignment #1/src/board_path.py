@@ -393,8 +393,8 @@ class Location:
         :param row_number: Integer Row Number of location
         :param column_number: Integer Column Number of location
         '''
-        _row_number = row_number
-        _column_number = column_number
+        self._row_number = row_number
+        self._column_number = column_number
 
     def get_row(self):
         """Row Number Accessor

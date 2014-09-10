@@ -128,6 +128,8 @@ def perform_a_star_algorithm_search(untraversed_board, start_loc, goal_loc,
     BoardPath.set_untraversed_board(untraversed_board)
     BoardPath.set_goal(goal_loc)
     BoardPath.set_heuristic(heuristic)
+    # Initially untraversed and traversed board are the same
+    BoardPath.set_traversed_board(untraversed_board)
 
     # Build the priority queue.
     priority_queue = []

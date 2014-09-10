@@ -351,7 +351,7 @@ class BoardPath:
                 print "Initial:"
             else:
                 temp_board[prev_row][prev_col] = "."
-                temp_board[loc[0]][loc[1]] = "@"
+                temp_board[loc.get_row()][loc.get_column()] = "@"
                 # Print the step number
                 print ""
                 print "Step {0}:".format(step_numb)
@@ -363,8 +363,8 @@ class BoardPath:
                 print board_str
 
             #  Store the previous location for next time through the loop.
-            prev_row = loc[0]
-            prev_col = loc[1]
+            prev_row = loc.get_row()
+            prev_col = loc.get_column()
             step_numb += 1
 
         #  Check if the target is reached

@@ -19,10 +19,16 @@ class BoardPath:
     _heuristic = ""
     _traversed_board = []
 
-    def __init__(self, start_loc):
+    def __init__(self, start_loc=None):
         '''
         Constructor
         '''
+
+        # If no start location is specified, use a dummy one
+        if(start_loc is None):
+            start_loc = Location()
+
+        # Create object variables
         self._current_cost = 0
         self._current_loc = start_loc
         self._path = []
@@ -190,12 +196,12 @@ class BoardPath:
         """
         # Verify a left move does not take you off the board.
         if (direction == "l"):
-            if (self._current_loc[1] == 0):
+            if (self._current_loc.get_column() == 0):
                 return False
         # Verify an up move does not take you off the board.
         elif (direction == "u"):
             # Verify the move does not take you off the board.
-            if (self._current_loc[0] == 0):
+            if (self._current_loc.get_row() == 0):
                 return False
         # Verify a right move does not take you off the board.
         elif (direction == "r"):
@@ -249,7 +255,7 @@ class BoardPath:
             return Location(current_row, current_column + 1)
         # Calculate the new location for a down move
         elif (direction == "d"):
-            return (current_row + 1, current_column)
+            return Location(current_row + 1, current_column)
         return Location()
 
     def move(self, direction):

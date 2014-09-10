@@ -137,7 +137,7 @@ def perform_a_star_algorithm_search(untraversed_board, start_loc, goal_loc,
     #  Queue the starting point of the search
     heapq.heappush(priority_queue, BoardPath(start_loc))
     # Mark the starting point checked
-    traversed_board[start_loc[0]][start_loc[1]] = "#"
+    traversed_board[start_loc.get_row()][start_loc.get_column()] = "#"
 
     #  Continue iterating through the priority queue until the shortest cost
     #  path is found or the queue is empty.
@@ -160,7 +160,9 @@ def perform_a_star_algorithm_search(untraversed_board, start_loc, goal_loc,
 
                 # Mark the space for this space as now blocked.
                 new_location = new_path.get_current_location()
-                traversed_board[new_location[0]][new_location[1]] = "#"
+                new_row = new_location.get_row()
+                new_column = new_location.get_column()
+                traversed_board[new_row][new_column] = "#"
                 # Update the traversed board for the BoardPath class
                 BoardPath.set_traversed_board(traversed_board)
     # Return since no path was found.

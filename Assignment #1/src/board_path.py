@@ -118,39 +118,52 @@ class BoardPath:
         if self._goal_loc == self._current_loc:
             return self._current_cost
 
-        # Start with the current cost so far as the foundation of A*
-        heurstic_distance = self._current_cost
-
         # Distance is at least the Manhattan distance as cannot move diagonal
-        manhattan_distance = self.calculate_manhattan_dist()
+        heurstic_distance = self.calculate_manhattan_dist()
 
-        # Update heuristic distance with minimum additional cost.
-        heurstic_distance += manhattan_distance
+#         # In case where all neighboring spaces are blocked or already
+#         # traversed, then set the path cost prohibitively large so it is
+#         # given minimum priority.
+#         if not (self.is_move_valid("d", BoardPath._traversed_board)) \
+#                 and not (self.is_move_valid("u", BoardPath._traversed_board)) \
+#                 and not (self.is_move_valid("l", BoardPath._traversed_board)) \
+#                 and not (self.is_move_valid("r", BoardPath._traversed_board)):
+#             # Total board area is sufficient as a prohibitive distance
+#             board_length = len(BoardPath._traversed_board)
+#             board_width = len(BoardPath._traversed_board[0])
+#             heurstic_distance += board_length * board_width
+#             return heurstic_distance
+# 
+#         # If all next steps that load directly to the goal are blocked, then
+#         # it takes at least two additional moves to get around it so add two
+#         # to the heuristic distance to include that cost.
+#         if self._is_all_direct_next_steps_blocked(BoardPath._traversed_board):
+#             heurstic_distance += 2
 
-        # In case where all neighboring spaces are blocked or already
-        # traversed, then set the path cost prohibitively large so it is
-        # given minimum priority.
-        if not (self.is_move_valid("d", BoardPath._traversed_board)) \
-                and not (self.is_move_valid("u", BoardPath._traversed_board)) \
-                and not (self.is_move_valid("l", BoardPath._traversed_board)) \
-                and not (self.is_move_valid("r", BoardPath._traversed_board)):
-            # Total board area is sufficient as a prohibitive distance
-            board_length = len(BoardPath._traversed_board)
-            board_width = len(BoardPath._traversed_board[0])
-            heurstic_distance += board_length * board_width
-            return heurstic_distance
-
-        # If all next steps that load directly to the goal are blocked, then
-        # it takes at least two additional moves to get around it so add two
-        # to the heuristic distance to include that cost.
-        if self._is_all_direct_next_steps_blocked(BoardPath._traversed_board):
-            heurstic_distance += 2
+        # In a heap, if two nodes have the same cost, the object that was
+        # put into the heap first in many implementations will be on top of the
+        # heap. To make the algorithm more efficient, apply a slight penalty to
+        # a non valid solution to ensure if an invalid solution and a valid
+        # solution have the same cost that the valid solution would always be
+        # on top of the heap. This is done by giving all non-valid solutions a
+        # penalty term that is greater than zero and less than the minimum step
+        # size (e.g. in this case 0 < 0.1 < 1).
+        heurstic_distance += 0.1
 
         # Return heuristic distance
         return heurstic_distance
 
-    def _is_all_direct_next_paths_blocked(self, reference_board=None):
+    def _is_all_direct_next_moves_blocked(self, reference_board=None):
         """Direct Blocked Path Checker
+
+        This function checks whether if all direct next moves from the
+        current location are blocked by an unpassable object or the
+        edge of the board.  This can be used to determine a penalty
+        factor when calculating the heuristic.
+
+        This function is used in the made_up heuristics function.
+
+        :returns: True if next move is blocked and False otherwise
         """
         # Use untraversed board if none is specified
         if reference_board is None:

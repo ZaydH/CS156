@@ -19,4 +19,7 @@ python food_agent.py "No Mouse.txt" made_up
 python food_agent.py "No Goal.txt" manhattan
 python food_agent.py "No Goal.txt" euclidean
 python food_agent.py "No Goal.txt" made_up
+python food_agent.py "No Goal or Mouse.txt" manhattan
+python food_agent.py "No Goal or Mouse.txt" euclidean
+python food_agent.py "No Goal or Mouse.txt" made_up
 pause

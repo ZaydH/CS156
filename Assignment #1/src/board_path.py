@@ -121,24 +121,25 @@ class BoardPath:
         # Distance is at least the Manhattan distance as cannot move diagonal
         heurstic_distance = self.calculate_manhattan_dist()
 
-#         # In case where all neighboring spaces are blocked or already
-#         # traversed, then set the path cost prohibitively large so it is
-#         # given minimum priority.
-#         if not (self.is_move_valid("d", BoardPath._traversed_board)) \
-#                 and not (self.is_move_valid("u", BoardPath._traversed_board)) \
-#                 and not (self.is_move_valid("l", BoardPath._traversed_board)) \
-#                 and not (self.is_move_valid("r", BoardPath._traversed_board)):
-#             # Total board area is sufficient as a prohibitive distance
-#             board_length = len(BoardPath._traversed_board)
-#             board_width = len(BoardPath._traversed_board[0])
-#             heurstic_distance += board_length * board_width
-#             return heurstic_distance
-# 
-#         # If all next steps that load directly to the goal are blocked, then
-#         # it takes at least two additional moves to get around it so add two
-#         # to the heuristic distance to include that cost.
-#         if self._is_all_direct_next_steps_blocked(BoardPath._traversed_board):
-#             heurstic_distance += 2
+        # In case where all neighboring spaces are blocked or already
+        # traversed, then set the path cost prohibitively large so it is
+        # given minimum priority.
+        if not (self.is_move_valid("d", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("u", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("l", BoardPath._traversed_board)) \
+                and not (self.is_move_valid("r", BoardPath._traversed_board)):
+            # Total board area is sufficient as a prohibitive distance
+            board_length = len(BoardPath._traversed_board)
+            board_width = len(BoardPath._traversed_board[0])
+            heurstic_distance += board_length * board_width
+            return heurstic_distance
+
+        # If all next steps that load directly to the goal are blocked, then
+        # it takes at least two additional moves to get around the blocked 
+        # paths it (due to an obstacle or already traversed square) so add
+        # two to the heuristic distance to include that cost.
+        if self._is_all_direct_next_moves_blocked(BoardPath._traversed_board):
+            heurstic_distance += 2
 
         # In a heap, if two nodes have the same cost, the object that was
         # put into the heap first in many implementations will be on top of the
@@ -194,6 +195,30 @@ class BoardPath:
                 return True
             else:
                 return False
+        # Case #3 - Goal and current location are diagonal from one another
+        else:
+            number_invalid_conditions = 0
+            # Check if need to move down but it is blocked
+            if self._current_loc.get_row() < self._goal_loc.get_row() \
+                    and not self.is_move_valid("d", reference_board):
+                number_invalid_conditions += 1
+            # Check if need to move up but it is blocked
+            if self._current_loc.get_row() > self._goal_loc.get_row() \
+                    and not self.is_move_valid("u", reference_board):
+                number_invalid_conditions += 1
+            # Check if need to move right but it is blocked
+            if self._current_loc.get_column() < self._goal_loc.get_column() \
+                    and not self.is_move_valid("r", reference_board):
+                number_invalid_conditions += 1
+            # Check if need to move left but it is blocked
+            if self._current_loc.get_column() > self._goal_loc.get_column() \
+                    and not self.is_move_valid("l", reference_board):
+                number_invalid_conditions += 1
+            # Only two direct moves when need to move diagonal. If invalid
+            # count equals two, then return true as condition met.
+            if number_invalid_conditions == 2:
+                return True
+        return False
 
     def is_move_valid(self, direction, reference_board=None):
         """Mover Checker
@@ -454,3 +479,9 @@ class Location:
             return self.__dict__ == other.__dict__
         else:
             return False
+
+    def __ne__(self, other):
+        """
+        Special function for != operator
+        """
+        return not (self == other)

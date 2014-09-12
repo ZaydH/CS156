@@ -93,9 +93,19 @@ def parse_board_file(filename):
                 embedded_array.append(character)
                 # Parse for special characters
                 if character == "@":
+                    # Ensure only one start location per file.
+                    if start_loc.is_valid():
+                        sys.exit()
                     start_loc = Location(row, col)
-                if character == "%":
+                elif character == "%":
+                    # Ensure only one goal per file
+                    if goal_loc.is_valid():
+                        sys.exit()
                     goal_loc = Location(row, col)
+                elif character != "." and character != "\n"\
+                        and character != "#":
+                    # Exit in the case of an invalid character.
+                    sys.exit()
 
         # Append the board row to the board and increment the row counter
         board.append(embedded_array)

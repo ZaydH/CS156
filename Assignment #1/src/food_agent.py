@@ -13,6 +13,7 @@ import heapq
 from board_path import BoardPath
 from board_path import Location
 import sys
+import os.path
 
 
 # def build_game_board(filename):
@@ -67,6 +68,11 @@ def parse_board_file(filename):
         start_loc: Location from where to start the search.
         goal_loc: Location from where to end the search.
     """
+
+    # Ensure the file exists.
+    if(not os.path.isfile(filename)):
+        sys.exit()
+
     #  Open the board file.
     board_file = open(filename, "r")
     #  Extract the board file as strings.

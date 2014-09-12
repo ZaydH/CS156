@@ -135,7 +135,7 @@ class BoardPath:
             return heurstic_distance
 
         # If all next steps that load directly to the goal are blocked, then
-        # it takes at least two additional moves to get around the blocked 
+        # it takes at least two additional moves to get around the blocked
         # paths it (due to an obstacle or already traversed square) so add
         # two to the heuristic distance to include that cost.
         if self._is_all_direct_next_moves_blocked(BoardPath._traversed_board):

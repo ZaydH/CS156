@@ -198,19 +198,19 @@ class BoardPath:
         # Case #3 - Goal and current location are diagonal from one another
         else:
             number_invalid_conditions = 0
-            # Check if need to move down but it is blocked
+            # Case 3A - Check if need to move down but it is blocked
             if self._current_loc.get_row() < self._goal_loc.get_row() \
                     and not self.is_move_valid("d", reference_board):
                 number_invalid_conditions += 1
-            # Check if need to move up but it is blocked
+            # Case 3B - Check if need to move up but it is blocked
             if self._current_loc.get_row() > self._goal_loc.get_row() \
                     and not self.is_move_valid("u", reference_board):
                 number_invalid_conditions += 1
-            # Check if need to move right but it is blocked
+            # Case 3C - Check if need to move right but it is blocked
             if self._current_loc.get_column() < self._goal_loc.get_column() \
                     and not self.is_move_valid("r", reference_board):
                 number_invalid_conditions += 1
-            # Check if need to move left but it is blocked
+            # Case 3D - Check if need to move left but it is blocked
             if self._current_loc.get_column() > self._goal_loc.get_column() \
                     and not self.is_move_valid("l", reference_board):
                 number_invalid_conditions += 1

@@ -1,6 +1,6 @@
-python UnevenBoard.py UnevenBoard.txt manhattan
-python UnevenBoard.py UnevenBoard.txt euclidean
-python UnevenBoard.py UnevenBoard.txt made_up
+python food_agent.py UnevenBoard.txt manhattan
+python food_agent.py UnevenBoard.txt euclidean
+python food_agent.py UnevenBoard.txt made_up
 pause
 python food_agent.py Deadend.txt manhattan
 python food_agent.py Deadend.txt euclidean

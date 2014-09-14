@@ -101,8 +101,8 @@ class BoardPath:
 
         :returns: A* Distance using Euclidean distance.
         """
-        x_dist = self._current_loc.get_row() - self._goal_loc.get_row()
-        y_dist = self._current_loc.get_column() - self._goal_loc.get_column()
+        x_dist = self._current_loc.get_column() - self._goal_loc.get_column()
+        y_dist = self._current_loc.get_row() - self._goal_loc.get_row()
         # Note ** is power operator in Python
         return self._current_cost + sqrt(x_dist**2 + y_dist**2)
 

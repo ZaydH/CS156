@@ -68,8 +68,7 @@ def parse_board_file(filename):
                     if goal_loc.is_valid():
                         sys.exit()
                     goal_loc = Location(row, col)
-                elif character != "." and character != "\n"\
-                        and character != "#":
+                elif not (character in [".",  "\n", "#"]):
                     # Exit in the case of an invalid character.
                     sys.exit()
 
@@ -155,9 +154,7 @@ board_file_path = sys.argv[1]
 
 # Extract the heuristic function.
 heuristic = sys.argv[2]
-if (heuristic != "manhattan" and
-        heuristic != "euclidean" and
-        heuristic != "made_up"):
+if not (heuristic in ["manhattan", "euclidean", "made_up"]):
     # print "Invalid heuristics function."
     # "That is too sad. I must quit. This hurts me as much as it hurts you."
     sys.exit()  # Exit the program

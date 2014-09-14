@@ -18,6 +18,7 @@ class BoardPath:
     _untraversed_board = []
     _heuristic = ""
     _traversed_board = []
+    _traversed_board_size = -1
 
     def __init__(self, start_loc=None):
         '''
@@ -119,7 +120,26 @@ class BoardPath:
             return self._current_cost
 
         # Distance is at least the Manhattan distance as cannot move diagonal
-        heurstic_distance = self.calculate_manhattan_dist()
+        heuristic_distance = self.calculate_manhattan_dist()
+
+        # Assume two board parts in the priority queue have the same weight.
+        # For those board paths with higher actual cost and lower estimated
+        # cost, there is more assurance in the accuracy of the actual cost
+        # than in the estimated cost.  Give a very small penalty (i.e. less
+        # than one step) to prefer a path with a higher known cost than a
+        # path with a higher estimated cost.
+        # Extract the number of portion of the move cost that is estimated
+        estimated_cost = heuristic_distance - self._current_cost
+        # Estimated cost penalty is normalized to a maximum of 0.1 steps
+        # This is achieved by dividing the estimate cost by the size of the
+        # board. Since the estimated cost can never be larger than the board
+        # size, this is less than or equal to 1. To normalize to a maximum of
+        # 0.1, just multiply the number by 0.1.  This is than added to the
+        # heuristic distance determined so far.
+        estimated_cost_penalty = 0.1 * estimated_cost
+        estimated_cost_penalty /= BoardPath._traversed_board_size
+        # Add what is essentially an "uncertainty penalty"
+        heuristic_distance += estimated_cost_penalty
 
         # In case where all neighboring spaces are blocked or already
         # traversed, then set the path cost prohibitively large so it is
@@ -131,15 +151,15 @@ class BoardPath:
             # Total board area is sufficient as a prohibitive distance
             board_length = len(BoardPath._traversed_board)
             board_width = len(BoardPath._traversed_board[0])
-            heurstic_distance += board_length * board_width
-            return heurstic_distance
+            heuristic_distance += board_length * board_width
+            return heuristic_distance
 
         # If all next steps that load directly to the goal are blocked, then
         # it takes at least two additional moves to get around the blocked
         # paths it (due to an obstacle or already traversed square) so add
         # two to the heuristic distance to include that cost.
         if self._is_all_direct_next_moves_blocked(BoardPath._traversed_board):
-            heurstic_distance += 2
+            heuristic_distance += 2
 
         # In a heap, if two nodes have the same cost, the object that was
         # put into the heap first in many implementations will be on top of the
@@ -149,10 +169,10 @@ class BoardPath:
         # on top of the heap. This is done by giving all non-valid solutions a
         # penalty term that is greater than zero and less than the minimum step
         # size (e.g. in this case 0 < 0.1 < 1).
-        heurstic_distance += 0.1
+        heuristic_distance += 0.1
 
         # Return heuristic distance
-        return heurstic_distance
+        return heuristic_distance
 
     def _is_all_direct_next_moves_blocked(self, reference_board=None):
         """Direct Blocked Path Checker
@@ -358,6 +378,11 @@ class BoardPath:
         :param board: Two dimensional board.
         """
         BoardPath._traversed_board = board
+        # Extract the size of the traversed board
+        # This is stored and used in "made_up" heuristic analysis
+        BoardPath._traversed_board_size = 0
+        for board_row in board:
+            BoardPath._traversed_board_size += len(board_row)
 
     @staticmethod
     def set_heuristic(heuristic):

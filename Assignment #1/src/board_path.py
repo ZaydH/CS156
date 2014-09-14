@@ -5,6 +5,7 @@ Created on Aug 30, 2014
 '''
 
 from math import sqrt
+import sys
 
 
 class BoardPath:
@@ -77,7 +78,8 @@ class BoardPath:
         elif(heuristic == "made_up"):
             return self.calculate_made_up_dist()
         else:
-            assert False, "Invalid distance heuristic"
+            sys.exit()
+#             assert False, "Invalid distance heuristic"
 
     def calculate_manhattan_dist(self):
         """Manhattan Distance Calculator
@@ -120,26 +122,26 @@ class BoardPath:
             return self._current_cost
 
         # Distance is at least the Manhattan distance as cannot move diagonal
-        heuristic_distance = self.calculate_manhattan_dist()
+        estimated_distance = self.calculate_manhattan_dist()
 
         # Assume two board parts in the priority queue have the same weight.
-        # For those board paths with higher actual cost and lower estimated
+        # For those board paths with higher actual cost and lower heuristic
         # cost, there is more assurance in the accuracy of the actual cost
-        # than in the estimated cost.  Give a very small penalty (i.e. less
+        # than in the heuristic cost.  Give a very small penalty (i.e. less
         # than one step) to prefer a path with a higher known cost than a
-        # path with a higher estimated cost.
-        # Extract the number of portion of the move cost that is estimated
-        estimated_cost = heuristic_distance - self._current_cost
-        # Estimated cost penalty is normalized to a maximum of 0.1 steps
-        # This is achieved by dividing the estimate cost by the size of the
-        # board. Since the estimated cost can never be larger than the board
-        # size, this is less than or equal to 1. To normalize to a maximum of
-        # 0.1, just multiply the number by 0.1.  This is than added to the
-        # heuristic distance determined so far.
-        estimated_cost_penalty = 0.1 * estimated_cost
-        estimated_cost_penalty /= BoardPath._traversed_board_size
+        # path with a higher heuristic cost.
+        # Extract the number of portion of the move cost from the heuristic
+        heuristic_cost = estimated_distance - self._current_cost
+        # Heuristic cost penalty is normalized to a maximum of 0.1 steps
+        # This is achieved by dividing the heuristic cost by the size of the
+        # board. Since the heuristic cost can never be larger than the board
+        # size, this quotient is less than or equal to 1. To normalize to a
+        # maximum of 0.1, just multiply the number by 0.1.  This is than added
+        # to the estimated distance determined so far.
+        heuristic_cost_penalty = 0.1 * heuristic_cost
+        heuristic_cost_penalty /= BoardPath._traversed_board_size
         # Add what is essentially an "uncertainty penalty"
-        heuristic_distance += estimated_cost_penalty
+        estimated_distance += heuristic_cost_penalty
 
         # In case where all neighboring spaces are blocked or already
         # traversed, then set the path cost prohibitively large so it is
@@ -149,17 +151,15 @@ class BoardPath:
                 and not (self.is_move_valid("l", BoardPath._traversed_board)) \
                 and not (self.is_move_valid("r", BoardPath._traversed_board)):
             # Total board area is sufficient as a prohibitive distance
-            board_length = len(BoardPath._traversed_board)
-            board_width = len(BoardPath._traversed_board[0])
-            heuristic_distance += board_length * board_width
-            return heuristic_distance
+            estimated_distance += BoardPath._traversed_board_size
+            return estimated_distance
 
         # If all next steps that load directly to the goal are blocked, then
         # it takes at least two additional moves to get around the blocked
         # paths it (due to an obstacle or already traversed square) so add
-        # two to the heuristic distance to include that cost.
+        # two to the estimated distance to include that cost.
         if self._is_all_direct_next_moves_blocked(BoardPath._traversed_board):
-            heuristic_distance += 2
+            estimated_distance += 2
 
         # In a heap, if two nodes have the same cost, the object that was
         # put into the heap first in many implementations will be on top of the
@@ -169,10 +169,10 @@ class BoardPath:
         # on top of the heap. This is done by giving all non-valid solutions a
         # penalty term that is greater than zero and less than the minimum step
         # size (e.g. in this case 0 < 0.1 < 1).
-        heuristic_distance += 0.1
+        estimated_distance += 0.1
 
-        # Return heuristic distance
-        return heuristic_distance
+        # Return estimated distance
+        return estimated_distance
 
     def _is_all_direct_next_moves_blocked(self, reference_board=None):
         """Direct Blocked Path Checker

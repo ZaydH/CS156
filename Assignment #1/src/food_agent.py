@@ -16,46 +16,6 @@ import sys
 import os.path
 
 
-# def build_game_board(filename):
-#     """
-#     Function used to create a board file.
-#     """
-#     board_file = open(filename, "w")
-#     board_file.write("@..#\n")
-#     board_file.write("#.%#")
-#     board_file.close()
-#
-#
-#
-# build_game_board("test.txt")
-#
-#
-# def build_game_board2(filename):
-#     """
-#     Function used to create a board file.
-#     """
-#     board_file = open(filename, "w")
-#     board_file.write(".......\n")
-#     board_file.write(".#####.\n")
-#     board_file.write(".#.....\n")
-#     board_file.write(".#.###.\n")
-#     board_file.write(".#.@.#%\n")
-#     board_file.write(".###.##\n")
-#     board_file.write("......#")
-#     board_file.close()
-# build_game_board2("test2.txt")
-#
-#
-# def build_game_board3(filename):
-#     """
-#     Function used to create a board file.
-#     """
-#     board_file = open(filename, "w")
-#     board_file.write("@#%")
-#     board_file.close()
-# build_game_board3("test3.txt")
-
-
 def parse_board_file(filename):
     """Board File Parser
 

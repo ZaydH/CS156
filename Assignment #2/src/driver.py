@@ -26,6 +26,11 @@ def build_initial_deck():
     # Shuffle the temporary deck
     shuffle_deck(temp_deck)
 
+#     for i in range(0, cards_per_deck-1):
+#         for j in range(i+1, cards_per_deck):
+#             if(temp_deck[i] == temp_deck[j]):
+#                 print "Duplicates at index " + str(i) + "and index " + str(j)
+
     # Return the temporary deck
     return temp_deck
 
@@ -48,4 +53,3 @@ computer_player_hand = []
 print "Welcome to the Wild, Weird, and Funky World of Crazy Eights."
 
 print build_initial_deck()
-

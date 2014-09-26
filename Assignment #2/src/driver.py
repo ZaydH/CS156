@@ -117,11 +117,8 @@ def check_and_print_victory_conditions():
 
 # Build the deck for the game as well as the player's hands.
 deck = build_initial_deck()
-print deck
 human_player_hand = draw_cards(8)
-print human_player_hand
 computer_player_hand = draw_cards(8)
-print computer_player_hand
 
 
 print "Welcome to the Wild, Weird, and Funky World of Crazy Eights.\n"
@@ -130,19 +127,27 @@ print "I am generous enough to give you the option to go first or second.\n"
 # Have the user enter whether they are going first or second.
 entered_string = ""
 first_time_in_loop = True
-while(entered_string != "1" or entered_string != "2"):
+while(entered_string != "1" and entered_string != "2"):
 
     # If not the first time through the loop print an error message.
-    if( !first_time_in_loop ):
+    if(not first_time_in_loop):
         print"\nInvalid entry.\n"
-        first_time_in_loop = False
-        
-    entered_string = input("To go first, type \"1\" and press enter. Otherwise to go second,\n"
-          + "type \"2\" and press enter. Type your selection here:  ")
+    first_time_in_loop = False
+
+    #  Get the user input.
+    entered_string = raw_input("To go first, type \"1\" and press enter. "
+                               + "Otherwise to go second,\ntype \"2\" and "
+                               + "press enter. Type your selection here:  ")
+
+
+# Extract from what the user entered as play order
+# the player marked in the initial move.
+inital_move_player = int(entered_string) - 1
 
 
 #  Continue playing the game until the deck is empty.
-while(len(deck) > 0):
+while(len(deck) > 0 and len(human_player_hand) > 0
+      and len(computer_player_hand) > 0):
     pass
 
 # Once the deck is empty, check and print who won.

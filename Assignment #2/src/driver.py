@@ -122,7 +122,8 @@ computer_player_hand = draw_cards(8)
 
 
 print "Welcome to the Wild, Weird, and Funky World of Crazy Eights.\n"
-print "I am generous enough to give you the option to go first or second.\n"
+print "I am generous enough to give you the option to choose whether"
+print " you want  go first or second.\n"
 
 # Have the user enter whether they are going first or second.
 entered_string = ""
@@ -139,16 +140,45 @@ while(entered_string != "1" and entered_string != "2"):
                                + "Otherwise to go second,\ntype \"2\" and "
                                + "press enter. Type your selection here:  ")
 
-
 # Extract from what the user entered as play order
 # the player marked in the initial move.
-inital_move_player = int(entered_string) - 1
+current_player = int(entered_string) - 1
+
+
+# Initialize the play history by taking one card off the deck.
+next_card = draw_cards(1)[0]  # Draw a card to start the deck.
+# Store the last move in case special circumstances must be handled
+last_move = create_move(current_player, next_card,
+                        determine_card_suit(next_card), 0)
+# Add initial move to the history
+play_history = [last_move]
+print play_history
 
 
 #  Continue playing the game until the deck is empty.
 while(len(deck) > 0 and len(human_player_hand) > 0
       and len(computer_player_hand) > 0):
-    pass
+
+    # Get if any cards need to be drawn in this turn.
+    numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
+    # If cards need to be drawn, then draw them from the deck.
+    if(numb_cards_to_draw > 0):
+        # Check if the current player is the computer
+        if(current_player == 0):
+            computer_player_hand += draw_cards(numb_cards_to_draw)
+        # Check if the current player is the human
+        elif(current_player == 1):
+            # Extract the cards to be drawn by the player.
+            drawn_cards = draw_cards(numb_cards_to_draw)
+            if(numb_cards_to_draw > 1):
+                print "You drew cards: " + drawn_cards
+            else:
+                print "You drew card: " + drawn_cards
+            # Add the drawn cards to the player's hand
+            human_player_hand += drawn_cards
+
+    # Switch to the next player.
+    current_player = (current_player+1) % 2
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions()

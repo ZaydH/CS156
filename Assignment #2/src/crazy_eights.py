@@ -91,10 +91,10 @@ def determine_card_suit(card_number):
 
     :returns: Card's suit.  0 is spade; 1 is heart; 2 is diamond; 3 is clubs.
     '''
-    return card_number // 4
+    return card_number // 13
 
 
-def check_for_blocked_turn(history):
+def check_for_blocked_turn(current_player, history):
     '''
     This function checks if a move by the current player is blocked due to
     a move made by the other player.
@@ -114,7 +114,7 @@ def check_for_blocked_turn(history):
     #  Parse the last move.
     last_player = last_move[0]  # The player who played last.
     last_discard = last_move[1]  # Face up card.
-    last_suit = last_move[2]
+#     last_suit = last_move[2]
     numb_picked_up_cards = last_move[3]  # Numb of cards picked up in last turn
 
     # If on the last move someone drew, then this turn is always a normal move.
@@ -124,12 +124,12 @@ def check_for_blocked_turn(history):
     # Check if the last move was queen of spades.
     if(last_player != 0 and last_discard == MoveType.queen_of_spades):
         # On a queen of spades, must draw five cards.
-        return (MoveType.queen_of_spades, (0, last_discard, last_suit, 5))
+        return (MoveType.queen_of_spades, (current_player, 0, 0, 5))
 
     # Check if the last move was a jack
     if(last_player != 0 and
        determine_card_rank(last_discard) == MoveType.jack):
-        return (MoveType.jack, (0, last_discard, last_suit, 1))
+        return (MoveType.jack, (current_player, 0, 0, 1))
 
 
 def parse_played_history(history):
@@ -194,3 +194,31 @@ def shuffle_deck(valid_cards):
 
     #  Return the shuffled deck.
     return valid_cards
+
+
+def create_move(player_numb, top_of_discard, suit, numb_drawn_cards):
+    '''
+    Helper function to create a move for the history list.
+
+    :param int player_numb: 0 for Computer, 1 for Human
+    :param int top_of_card: Rank/Suit number for card on top of discard pile
+    :param int suit: Number of the suit
+    :param int numb_draw_cards: Number of cards drawn in the turn.
+
+    :returns: Tuple in the form:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+    '''
+    return (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+
+def get_number_of_cards_to_draw(move):
+    '''
+    Extracts from a move the number of cards to draw in this turn.
+
+    :param Tuple move: Player move in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    :returns: Integer number of cards to draw (>=0) in the form:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+    '''
+    return move[3]

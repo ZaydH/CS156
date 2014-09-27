@@ -15,9 +15,19 @@ import random
 class MoveType:
     '''
     '''
-    normal_move = 1
+    normal_move = -1
+    two = 1
+    one_two = 2
+    two_twos = 4
+    three_twos = 6
+    four_twos = 8
     jack = 10
     queen_of_spades = 11
+
+
+class PlayerType:
+    human = 0
+    computer = 1
 
 
 class CrazyEight:
@@ -42,10 +52,12 @@ class CrazyEight:
         hand = partial_state[2]
         history = partial_state[3]
 
-        # Check if my current move is blocked.  If so, return immediately.
-        (move_type, next_move) = check_for_blocked_turn(history)
-        if(move_type != MoveType.normal_move):
-            return next_move
+        # Extract current move type.
+        move_type = check_for_special_move_type(history)
+        # Make forced play in case of a queen of spaces.
+        if(move_type == MoveType.queen_of_spades):
+            return get_special_move(MoveType.queen_of_spades,
+                                    PlayerType.computer)
 
         #  Determine available cards in deck and other player's hand.
 
@@ -65,10 +77,12 @@ class CrazyEight:
         hand = state[2][2]
         history = state[2][3]
 
-        # Check if my current move is blocked.  If so, return immediately.
-        (move_type, next_move) = check_for_blocked_turn(history)
-        if(move_type != MoveType.normal_move):
-            return next_move
+        # Extract current move type.
+        move_type = check_for_special_move_type(history)
+        # Make forced play in case of a queen of spaces.
+        if(move_type == MoveType.queen_of_spades):
+            return get_special_move(MoveType.queen_of_spades,
+                                    PlayerType.computer)
 
 
 def determine_card_rank(card_number):
@@ -94,15 +108,14 @@ def determine_card_suit(card_number):
     return card_number // 13
 
 
-def check_for_blocked_turn(current_player, history):
+def check_for_special_move_type(history):
     '''
-    This function checks if a move by the current player is blocked due to
-    a move made by the other player.
+    This function checks if a move by the current player is specially altered
+    due to a move made by the other player.
 
-    :param tuple history:
-    :returns: Tuple in the form of (MoveType, NextMove (if applicable)).
-            A NextMove is itself a tuple in the form:
-            (player_num, face_up_card, suit, number_of_cards)
+    :param tuple history: History of moves to current time.
+
+    :returns: An object of type "MoveType"
     '''
     # On the first move, regardless of face card, always a normal move.
     if(len(history) == 1):
@@ -112,24 +125,75 @@ def check_for_blocked_turn(current_player, history):
     last_move = history[len(history) - 1]
 
     #  Parse the last move.
-    last_player = last_move[0]  # The player who played last.
-    last_discard = last_move[1]  # Face up card.
-#     last_suit = last_move[2]
-    numb_picked_up_cards = last_move[3]  # Numb of cards picked up in last turn
+    last_discard = get_discard(last_move[1])  # Face up card.
+    # Numb of cards picked up in last turn
+    numb_picked_up_cards = get_number_of_cards_to_draw(last_move[3])
 
     # If on the last move someone drew, then this turn is always a normal move.
     if(numb_picked_up_cards > 0):
-        return (MoveType.normal_move, (-1, -1, -1, -1))
+        return MoveType.normal_move
 
     # Check if the last move was queen of spades.
-    if(last_player != 0 and last_discard == MoveType.queen_of_spades):
+    if(last_discard == MoveType.queen_of_spades):
         # On a queen of spades, must draw five cards.
-        return (MoveType.queen_of_spades, (current_player, 0, 0, 5))
+        return MoveType.queen_of_spades
 
     # Check if the last move was a jack
-    if(last_player != 0 and
-       determine_card_rank(last_discard) == MoveType.jack):
-        return (MoveType.jack, (current_player, 0, 0, 1))
+    if(determine_card_rank(last_discard) == MoveType.jack):
+        return MoveType.jack
+
+    # Check if the last move was a two.
+    if(determine_card_rank(last_discard) == MoveType.two):
+        numb_history_elements = len(history)
+        twos_count = 1
+
+        # Iterate checking twos court
+        while(twos_count < 4
+              and determine_card_rank(last_discard) == MoveType.two
+              and numb_history_elements >= twos_count + 2):
+
+            # Get previous discard count.
+            last_discard = get_discard(history[len(history) - twos_count - 1])
+            if(determine_card_rank(last_discard) == MoveType.two):
+                # Increment the number of twos
+                twos_count += 1
+
+                if(numb_history_elements == 1 + twos_count):
+                    return MoveType.two_twos
+
+        # Return the number of twos played in a row,
+        if(twos_count == 1):
+            return MoveType.one_two
+        if(twos_count == 2):
+            return MoveType.two_twos
+        elif(twos_count == 3):
+            return MoveType.three_twos
+        else:
+            return MoveType.four_twos
+
+    # Under all other circumstances, the next move is normal.
+    return MoveType.normal_move
+
+
+def get_special_move(move_type, player_type):
+    '''
+    For specified special moves, this function returns the associated
+    special move object.
+
+    :param MoveType move_type: Type of move made.
+    :param PlayerType player_type: Current player either human or computer.
+
+    :returns: Move object in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+    '''
+    #  Check for special move for queen of spades
+    if(move_type == MoveType.queen_of_spades):
+        return create_move(player_type, 0, 0, 5)
+
+    #  Check for special move for multiple twos
+    if(move_type == MoveType.one_two or move_type == MoveType.two_twos
+       or move_type == MoveType.three_twos or move_type == MoveType.four_twos):
+        return create_move(player_type, 0, 0, move_type)
 
 
 def parse_played_history(history):
@@ -140,6 +204,7 @@ def parse_played_history(history):
     :returns: Tuple in the form (number_cards_player0, number_cards_player1,
                                  list_of_discarded_cards)
     '''
+    assert(False)
 
     # Each player starts with 8 cards.
     numb_cards_per_player = [8, 8]
@@ -209,6 +274,18 @@ def create_move(player_numb, top_of_discard, suit, numb_drawn_cards):
         (player_numb, top_of_discard, suit, numb_drawn_cards)
     '''
     return (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+
+def get_discard(move):
+    '''
+    Extracts from a move the discarded card.
+
+    :param Tuple move: Player move in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    :returns: Integer number for the discarded card.
+    '''
+    return move[1]
 
 
 def get_number_of_cards_to_draw(move):

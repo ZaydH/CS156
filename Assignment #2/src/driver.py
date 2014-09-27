@@ -142,8 +142,7 @@ while(entered_string != "1" and entered_string != "2"):
 
 # Extract from what the user entered as play order
 # the player marked in the initial move.
-current_player = int(entered_string) - 1
-
+current_player = (int(entered_string) + 1) % 2
 
 # Initialize the play history by taking one card off the deck.
 next_card = draw_cards(1)[0]  # Draw a card to start the deck.
@@ -152,22 +151,40 @@ last_move = create_move(current_player, next_card,
                         determine_card_suit(next_card), 0)
 # Add initial move to the history
 play_history = [last_move]
-print play_history
-
 
 #  Continue playing the game until the deck is empty.
 while(len(deck) > 0 and len(human_player_hand) > 0
       and len(computer_player_hand) > 0):
+
+    # Display the play history until this point.
+    print "Current Play History:"
+    print play_history + "\n"
+
+    # Handle the player's turn
+    if(current_player == PlayerType.human):
+        print "Computer's Turn:\n"
+
+        # Check if computer player a queen of spades on last play.
+        if(check_for_special_move_type(play_history)
+           == MoveType.queen_of_spades):
+            last_move
+
+    # Handle the computer's turn
+    elif(current_player == PlayerType.computer):
+        print "Computer's Turn:\n"
+
+    # Append this move to the play history.
+    play_history += last_move
 
     # Get if any cards need to be drawn in this turn.
     numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
     # If cards need to be drawn, then draw them from the deck.
     if(numb_cards_to_draw > 0):
         # Check if the current player is the computer
-        if(current_player == 0):
+        if(current_player == PlayerType.computer):
             computer_player_hand += draw_cards(numb_cards_to_draw)
         # Check if the current player is the human
-        elif(current_player == 1):
+        elif(current_player == PlayerType.human):
             # Extract the cards to be drawn by the player.
             drawn_cards = draw_cards(numb_cards_to_draw)
             if(numb_cards_to_draw > 1):
@@ -177,8 +194,17 @@ while(len(deck) > 0 and len(human_player_hand) > 0
             # Add the drawn cards to the player's hand
             human_player_hand += drawn_cards
 
-    # Switch to the next player.
-    current_player = (current_player+1) % 2
+    #  Check if on the last turn a player discarded a card
+    discarded_card = get_discard(play_history[len(play_history) - 1])
+    if(discarded_card != 0):
+        if(current_player == PlayerType.human):
+            human_player_hand.remove(discarded_card)
+        elif(current_player == PlayerType.computer):
+            computer_player_hand.remove(discarded_card)
+
+    # Switch to the next player only if last card played was not a jack.
+    if(check_for_special_move_type(play_history) != MoveType.jack):
+        current_player = (current_player+1) % 2
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions()

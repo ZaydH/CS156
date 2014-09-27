@@ -161,7 +161,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
     # Display the play history until this point.
     print "Current Play History:"
-    print play_history + "\n"
+    print play_history, "\n"
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
@@ -172,7 +172,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
            == MoveType.queen_of_spades):
             last_move = get_special_move(MoveType.queen_of_spades)
         else:
-            pass
+            print "Your current hand is: ", human_player_hand
 
     # Handle the computer's turn
     elif(current_player == PlayerType.computer):
@@ -185,12 +185,12 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
         # Print the turn
         print "Computer's Turn:\n"
-        print "Its move was: " + last_move
+        print "Its move was: ", last_move
 
     # Append this move to the play history.
-    play_history += last_move
+    play_history += [last_move]
 
-    # Get if any cards need to be drawn in this turn.
+    # Get if any ca1rds need to be drawn in this turn.
     numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
     # If cards need to be drawn, then draw them from the deck.
     if(numb_cards_to_draw > 0):

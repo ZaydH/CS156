@@ -145,12 +145,15 @@ while(entered_string != "1" and entered_string != "2"):
 current_player = (int(entered_string) + 1) % 2
 
 # Initialize the play history by taking one card off the deck.
-next_card = draw_cards(1)[0]  # Draw a card to start the deck.
+face_up_card = draw_cards(1)[0]  # Draw a card to start the deck.
+face_up_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
-last_move = create_move(current_player, next_card,
-                        determine_card_suit(next_card), 0)
+last_move = create_move(current_player, face_up_card,
+                        get_card_suit(face_up_suit), 0)
+
 # Add initial move to the history
 play_history = [last_move]
+
 
 #  Continue playing the game until the deck is empty.
 while(len(deck) > 0 and len(human_player_hand) > 0
@@ -167,11 +170,22 @@ while(len(deck) > 0 and len(human_player_hand) > 0
         # Check if computer player a queen of spades on last play.
         if(check_for_special_move_type(play_history)
            == MoveType.queen_of_spades):
-            last_move
+            last_move = get_special_move(MoveType.queen_of_spades)
+        else:
+            pass
 
     # Handle the computer's turn
     elif(current_player == PlayerType.computer):
+        #  Define the partial state.
+        partial_state = (face_up_card, face_up_suit,
+                         computer_player_hand, play_history)
+
+        #  Extract the computer's move.
+        last_move = CrazyEight.move(partial_state)
+
+        # Print the turn
         print "Computer's Turn:\n"
+        print "Its move was: " + last_move
 
     # Append this move to the play history.
     play_history += last_move
@@ -196,7 +210,11 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
     #  Check if on the last turn a player discarded a card
     discarded_card = get_discard(play_history[len(play_history) - 1])
-    if(discarded_card != 0):
+    if(discarded_card != 0 and numb_cards_to_draw == 0):
+        # Store the discarded card and get its suit
+        face_up_card = discarded_card
+        face_up_suit = get_card_suit(face_up_card)
+
         if(current_player == PlayerType.human):
             human_player_hand.remove(discarded_card)
         elif(current_player == PlayerType.computer):

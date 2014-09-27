@@ -38,7 +38,8 @@ class CrazyEight:
     Contains two public methods.  They are move and move_perfect_knowledge.
     '''
 
-    def move(self, partial_state):
+    @staticmethod
+    def move(partial_state):
         '''
         :param tuple partial_state: Tuple in the form:
             (face_up_card, suit, hand, history)
@@ -61,7 +62,8 @@ class CrazyEight:
 
         #  Determine available cards in deck and other player's hand.
 
-    def move_perfect_knowledge(self, state):
+    @staticmethod
+    def move_perfect_knowledge(state):
         '''
         :param tuple state: Tuple in the form (deck, other_hand, partial_state)
         '''
@@ -85,7 +87,7 @@ class CrazyEight:
                                     PlayerType.computer)
 
 
-def determine_card_rank(card_number):
+def get_card_rank(card_number):
     '''
     Function to extract the rank (i.e. Ace, 2, King, etc.) of a specified card.
 
@@ -97,7 +99,7 @@ def determine_card_rank(card_number):
     return card_number % 13  # Thirteen since 13 ranks per suit.
 
 
-def determine_card_suit(card_number):
+def get_card_suit(card_number):
     '''
     Function to extract the suit of a specified card.
 
@@ -139,22 +141,22 @@ def check_for_special_move_type(history):
         return MoveType.queen_of_spades
 
     # Check if the last move was a jack
-    if(determine_card_rank(last_discard) == MoveType.jack):
+    if(get_card_rank(last_discard) == MoveType.jack):
         return MoveType.jack
 
     # Check if the last move was a two.
-    if(determine_card_rank(last_discard) == MoveType.two):
+    if(get_card_rank(last_discard) == MoveType.two):
         numb_history_elements = len(history)
         twos_count = 1
 
         # Iterate checking twos court
         while(twos_count < 4
-              and determine_card_rank(last_discard) == MoveType.two
+              and get_card_rank(last_discard) == MoveType.two
               and numb_history_elements >= twos_count + 2):
 
             # Get previous discard count.
             last_discard = get_discard(history[len(history) - twos_count - 1])
-            if(determine_card_rank(last_discard) == MoveType.two):
+            if(get_card_rank(last_discard) == MoveType.two):
                 # Increment the number of twos
                 twos_count += 1
 

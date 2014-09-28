@@ -53,8 +53,8 @@ class CrazyEight:
         '''
         # Extract the input parameters from the tuple.
         face_up_card = partial_state[0]
-        suit = partial_state[1]
-        hand = partial_state[2]
+        active_suit = partial_state[1]
+        computer_hand = partial_state[2]
         history = partial_state[3]
 
         # Extract current move type.
@@ -70,10 +70,64 @@ class CrazyEight:
 
         # If the number of cards in the history does not match the
         # number the number cards in the computers hand raise an error'''
-        if(numb_computer_cards != len(hand)):
-            raise ValueError("The history and the size of the player's "
+        if(numb_computer_cards != len(computer_hand)):
+            raise ValueError("The history and the size of the computer's "
                              + "hand do not match")
-        
+
+        # Build a list of the available plays
+        available_cards = build_available_card_list(computer_hand,
+                                                    discarded_cards)
+
+        # Iterate through n random game possible permutations
+        # to select the best possible move.
+        best_move = (-1, -1, -1, -1)
+
+        # Dictionary storing moves proposed by the "perfect_knowledge" method
+        # as well as the number of times it was selected.  The more times it
+        # was selected, the better the solution.
+        proposed_moves = {}
+        for i in range(0, 100):
+
+            # Shuffle the available deck.
+            shuffled_deck = shuffle_deck(available_cards)
+            # Separate the available cards into the human player's hand
+            # and the un-played (available) card set.
+            human_player_hand, shuffled_deck = draw_cards(shuffled_deck,
+                                                          numb_human_cards)
+            # Sort the human player hand for improved readability.
+            # TODO remove human player hand sort.
+            human_player_hand.sort()
+
+            # Build the state Tuple for the computer's move.
+            state = (shuffled_deck, human_player_hand, partial_state)
+            temp_move = CrazyEight.move_perfect_knowledge(state)
+
+            # On first loop, best move is the current one.
+            if(i == 0):
+                best_move = temp_move
+            else:
+                # If this move has not been previously proposed,
+                # then add it to the dictionary
+                if(temp_move not in proposed_moves):
+                    proposed_moves[temp_move] = 1
+                # If previously proposed, increment its proposed count
+                else:
+                    # Get previous proposed count
+                    proposed_count = proposed_moves[temp_move]
+                    proposed_moves[temp_move] = proposed_count + 1
+
+                # Check if you need to update best move
+                if(proposed_moves[temp_move] > proposed_moves[best_move]):
+                    temp_move = best_move
+
+        # TODO Remove move checker before submitting.
+        # Error check that the proposed move is valid.
+        if(check_if_move_valid(move_type, best_move, PlayerType.computer,
+                               computer_hand, face_up_card, active_suit)):
+            raise RuntimeError("Best move selected is invalid.")
+
+        # Return the best move.
+        return best_move
 
     @staticmethod
     def move_perfect_knowledge(state):
@@ -309,7 +363,7 @@ def parse_move_string(move_type, input_move, player,
 
 
 def check_if_move_valid(move_type, move, player,
-                        hand, face_up_card, face_up_suit):
+                        hand, face_up_card, active_suit):
     '''
     This function parses a specified string and if it is a valid
     move it, returns that string.  Otherwise, it returns None.
@@ -338,7 +392,7 @@ def check_if_move_valid(move_type, move, player,
     >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [0], 0,-1)
     Traceback (most recent call last):
         ...
-    ValueError: face_up_suit must be between 0 and 3
+    ValueError: active_suit must be between 0 and 3
     >>> check_if_move_valid(MoveType.normal_move,(1,40,0,0),1,[20,50,40],39,3)
     True
     >>> check_if_move_valid(MoveType.normal_move,(1,40,0,1),1,[20,50,40],39,3)
@@ -380,8 +434,8 @@ def check_if_move_valid(move_type, move, player,
         raise ValueError("The player's hand must have at least one card.")
     if(face_up_card < 0 or face_up_card > 51):
         raise ValueError("face_up_card must be between 0 and 51")
-    if(face_up_suit < 0 or face_up_suit > 3):
-        raise ValueError("face_up_suit must be between 0 and 3")
+    if(active_suit < 0 or active_suit > 3):
+        raise ValueError("active_suit must be between 0 and 3")
 
     # Extract some information on the move. This is used below.
     discarded_card = get_discard(move)
@@ -423,7 +477,7 @@ def check_if_move_valid(move_type, move, player,
 
     # For a discard, check if the suit and/or face card matches
     return (get_card_rank(discarded_card) == get_card_rank(face_up_card)
-            or get_card_suit(discarded_card) == face_up_suit)
+            or get_card_suit(discarded_card) == active_suit)
 
 
 def parse_play_history(history):
@@ -578,9 +632,11 @@ def draw_cards(deck, max_numb_cards_to_draw):
         ...
     ValueError: Number of cards in the deck must be more than one
     >>> draw_cards([5,6,8,9,10,11], 4)
-    [11, 10, 9, 8]
+    ([11, 10, 9, 8], [5, 6])
     >>> draw_cards([10,11], 4)
-    [11, 10]
+    ([11, 10], [])
+    >>> draw_cards([5,6,8,9,10,11], 2)
+    ([11, 10], [5, 6, 8, 9])
     '''
 
     # Verify a valid deck
@@ -598,7 +654,7 @@ def draw_cards(deck, max_numb_cards_to_draw):
         drawn_cards[i] = deck.pop()
 
     # Return the drawn cards.
-    return drawn_cards
+    return drawn_cards, deck
 
 
 def shuffle_deck(valid_cards):

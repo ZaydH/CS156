@@ -124,7 +124,8 @@ while(entered_string != "1" and entered_string != "2"):
 current_player = (int(entered_string) + 1) % 2
 
 # Initialize the play history by taking one card off the deck.
-face_up_card = draw_cards(1)[0]  # Draw a card to start the deck.
+drawn_cards, deck = draw_cards(deck, 1)  # Draw a card to start the deck.
+face_up_card = drawn_cards[0]
 face_up_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
 last_move = create_move(current_player, face_up_card,
@@ -197,13 +198,16 @@ while(len(deck) > 0 and len(human_player_hand) > 0
     numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
     # If cards need to be drawn, then draw them from the deck.
     if(numb_cards_to_draw > 0):
+
+        # Draw the cards
+        drawn_cards, deck = draw_cards(deck, numb_cards_to_draw)
+
         # Check if the current player is the computer
         if(current_player == PlayerType.computer):
-            computer_player_hand += draw_cards(deck, numb_cards_to_draw)
+            computer_player_hand += drawn_cards
         # Check if the current player is the human
         elif(current_player == PlayerType.human):
             # Extract the cards to be drawn by the player.
-            drawn_cards = draw_cards(deck, numb_cards_to_draw)
             if(numb_cards_to_draw > 1):
                 print "You drew cards: ", drawn_cards
             else:

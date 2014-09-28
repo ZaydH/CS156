@@ -180,7 +180,7 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):
-        current_player = (current_player+1) % 2
+        current_player = SimplifiedState.update_next_player(current_player)
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions(human_player_hand, computer_player_hand)

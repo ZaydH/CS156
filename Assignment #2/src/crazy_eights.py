@@ -44,29 +44,52 @@ class MinimaxPlayer:
 
 
 class SimplifiedState:
+    '''
+    Class represents the "state" used in the minimax algorithm.
+
+    This is simplified version of the state object passed into the
+    move_perfect_knowledge method.  This is used because it is lighter weight
+    and I created helper methods to handle all the transitions.
+    '''
+
+    # Stores whether the computer is min or max.
+    _computer_minimax_player = -1
 
     def __init__(self, previous_move_types, deck,
-                 human_hand, computer_hand,
-                 face_up_card, active_suit):
+                 players_turn, human_hand,
+                 computer_hand, face_up_card,
+                 active_suit):
+        '''
+        Constructor
+        '''
         # Store the class variables
         _previous_move_type = MoveType
         _game_deck = deck
+        _players_turn = players_turn
         _human_hand = human_hand
         _computer_hand = computer_hand
         _face_up_card = face_up_card
         _active_suit = active_suit
 
-    def generate_next_state(self, last_move):
+    def generate_next_state(self, new_move):
+        '''
+        Returns a new SimplifiedState object after doing one move.
+
+        @param move: A move tuple.
+
+        @return: Updated SimplifiedState with after applying "new_move"
+        '''
         # Create a copy of this state.
         next_state = SimplifiedState(self._previous_move_type,
                                      list(self._game_deck),
+                                     self._players_turn,
                                      list(self._human_hand),
                                      list(self._computer_hand),
                                      self._face_up_card,
                                      self._active_suit)
 
         # Process a draw.
-        SimplifiedState.process_card_drawing(last_move,
+        SimplifiedState.process_card_drawing(new_move,
                                              next_state._game_deck,
                                              next_state._human_hand,
                                              next_state._computer_hand,
@@ -74,18 +97,31 @@ class SimplifiedState:
 
         # Process a discard
         next_state.face_up_card, next_state._active_suit = \
-            SimplifiedState.process_discarded_card(last_move,
+            SimplifiedState.process_discarded_card(new_move,
                                                    next_state._human_hand,
                                                    next_state._computer_hand,
                                                    next_state.face_up_card,
                                                    next_state._active_suit)
+
+        # Update the new state's previous_move_type variable.
+        previous_move_type = next_state._previous_move_type
+        next_state._previous_move_type = \
+            SimplifiedState.update_previous_move_type(previous_move_type,
+                                                      new_move)
+        next_state._previous_move_type
+
+        # Update whose turn it is.
+        if(next_state._previous_move_type != MoveType.jack):
+            next_state._players_turn = \
+                SimplifiedState.update_next_player(next_state._players_turn)
+
         # Return the successor state.
         return next_state
 
     @staticmethod
     def process_discarded_card(last_move, human_hand, computer_hand,
                                face_up_card, active_suit):
-        '''
+        """
         This function processes discard operations and updates player hands.
 
         @param last_move: Last move made.  A Tuple.
@@ -93,7 +129,7 @@ class SimplifiedState:
         @param computer_hand: List of int's containing cards in computer's hand
 
         @return face_up_card, active_suit: Next face_up_card and active_suit
-        '''
+        """
 
         discarded_card = get_discard(last_move)
         numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
@@ -112,6 +148,17 @@ class SimplifiedState:
     @staticmethod
     def process_card_drawing(last_move, deck, human_hand, computer_hand,
                              display_human_draw):
+        '''
+        This function process any cards that need to be drawn and updates
+        the respective players hand.
+
+        @param last_move: Tuple of the last move.
+        @param deck: List of cards in the game deck.
+        @param human_hand: List of cards in the human player's hand.
+        @param computer_hand: List of cards in the computer player's hand.
+        @param display_human_draw: Boolean on whether to print to the console
+            what the human drew.
+        '''
         numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
         # If cards need to be drawn, then draw them from the deck.
         if(numb_cards_to_draw > 0):
@@ -137,6 +184,102 @@ class SimplifiedState:
                 # Add the drawn cards to the player's hand
                 human_hand += drawn_cards
                 human_hand.sort()
+
+    @staticmethod
+    def update_previous_move_type(previous_move_type, new_move):
+        '''
+        This function checks if a move by the current player is specially
+        altered due to a move made by the other player.
+
+        @param previous_move_type: MoveType of previous move
+        @param new_move: Move tuple that is used to updated previous_move_type
+
+        @returns: An updated version of previous_move_type
+
+        >>> SimplifiedState.update_previous_move_type(MoveType.normal_move,\
+        (1,11,0,0))
+        11
+        >>> SimplifiedState.update_previous_move_type(MoveType.normal_move,\
+        (1,1,0,0))
+        2
+        >>> SimplifiedState.update_previous_move_type(MoveType.one_two,\
+        (1,14,2,0))
+        4
+        >>> SimplifiedState.update_previous_move_type(MoveType.two_twos,\
+        (1,40,4,0))
+        6
+        >>> SimplifiedState.update_previous_move_type(MoveType.three_twos,\
+        (1,27,3,0))
+        8
+        >>> SimplifiedState.update_previous_move_type(MoveType.normal_move,\
+        (1,10,0,0))
+        10
+        >>> SimplifiedState.update_previous_move_type(MoveType.normal_move,\
+        (1,23,1,0))
+        10
+        >>> SimplifiedState.update_previous_move_type(MoveType.normal_move,\
+        (1,36,2,0))
+        10
+        '''
+
+        #  Parse the last move.
+        last_discard = get_discard(new_move)  # Face up card.
+        # Numb of cards picked up in last turn
+        numb_picked_up_cards = get_number_of_cards_to_draw(new_move)
+
+        # If on last move someone drew, then the turn is always a normal move
+        if(numb_picked_up_cards > 0):
+            return MoveType.normal_move
+
+        # Check if the last move was queen of spades.
+        if(last_discard == MoveType.queen_of_spades):
+            # On a queen of spades, must draw five cards.
+            return MoveType.queen_of_spades
+
+        # Check if the last move was a jack
+        if(get_card_rank(last_discard) == MoveType.jack):
+            return MoveType.jack
+
+        # Check if the last move was a two.
+        if(get_card_rank(last_discard) == MoveType.two):
+            # Return the number of twos played in a row,
+            if(previous_move_type == MoveType.one_two):
+                return MoveType.two_twos
+            elif(previous_move_type == MoveType.two_twos):
+                return MoveType.three_twos
+            elif(previous_move_type == MoveType.three_twos):
+                return MoveType.four_twos
+            else:
+                return MoveType.one_two
+
+        # Under all other circumstances, the next move is normal.
+        return MoveType.normal_move
+
+    @staticmethod
+    def update_next_player(current_player):
+        """
+        Sets the next player.
+
+        @param current_player: Current player of type PlayerType.
+
+        @return: PlayerType.computer if current_player is PlayerType.human.
+            Otherwise it returns PlayerType.human.
+
+        >>> SimplifiedState.update_next_player(PlayerType.human)
+        1
+        >>> SimplifiedState.update_next_player(PlayerType.computer)
+        0
+        >>> SimplifiedState.update_next_player("sdds")
+        Traceback (most recent call last):
+            ...
+        ValueError: current_player must be either 0 or 1
+        """
+
+        # Ensure the specified player number is valid.
+        if(current_player != 0 and current_player != 1):
+            raise ValueError("current_player must be either 0 or 1")
+        # Update the player number
+        return (current_player + 1) % 2
 
 
 class CrazyEight:
@@ -252,7 +395,7 @@ class CrazyEight:
         first_move = history[0]
         # Get the minimax player type. I set up the variables such that
         # that the enumerated value can match the first player.
-        minimax_player = get_player(first_move)
+        SimplifiedState._computer_minimax_player = get_player(first_move)
 
         # Check if the current move is a special contingency.
         previous_move_type = check_for_special_move_type(history)

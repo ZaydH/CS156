@@ -17,6 +17,8 @@ cards_per_deck = 52
 
 class MoveType:
     '''
+    Essentially an enumerated type listing special
+    move indicators.
     '''
     normal_move = -1
     two = 1
@@ -30,6 +32,9 @@ class MoveType:
 
 
 class PlayerType:
+    '''
+    Indicator of the player making a specific move.
+    '''
     human = 0
     computer = 1
 
@@ -41,6 +46,7 @@ class CrazyEight:
 
     Contains two public methods.  They are move and move_perfect_knowledge.
     '''
+    _maximum_depth = 5
 
     @staticmethod
     def move(partial_state):
@@ -153,6 +159,186 @@ class CrazyEight:
                                     PlayerType.computer)
 
         # TODO Implement check of twos.
+
+    @staticmethod
+    def heuristic_eval_function(human_hand, computer_hand):
+        '''
+        Function used when the cut-off test is met in the Minimax
+        algorithm.
+
+        :param int human_hand: List of integers for cards in human's hand
+        :param int computer_hand: List of integers for cards in computer's hand
+
+        :returns: 1 if computer has greater chance to win, -1 otherwise.
+
+        >>> CrazyEight.heuristic_eval_function([3,4],[2,5])
+        1
+        >>> CrazyEight.heuristic_eval_function([4],[2,5])
+        -1
+        >>> CrazyEight.heuristic_eval_function([6,5,2],[2,5])
+        1
+        >>> CrazyEight.heuristic_eval_function([],[5])
+        Traceback (most recent call last):
+            ...
+        ValueError: The human and computer hands must have at least 1 card
+        >>> CrazyEight.heuristic_eval_function([5],[])
+        Traceback (most recent call last):
+            ...
+        ValueError: The human and computer hands must have at least 1 card
+        '''
+
+        if(len(human_hand) == 0 or len(computer_hand) == 0):
+            raise ValueError("The human and computer hands must have "
+                             + "at least 1 card")
+
+        #  Determine a predicted score for each of the players
+        for i in range(0, 2):
+            # First time through the loop, look at human hand
+            if(i == PlayerType.human):
+                current_hand = human_hand
+            # Second time through the loop, look at the computer hand
+            else:
+                current_hand = computer_hand
+
+            # Start by looking at size of one's hand.
+            current_score = len(current_hand)
+
+            # Correct for good quality cards
+            for card in current_hand:
+                # In case of two, could hurt opponent so subtract 1
+                if(card == MoveType.two):
+                    current_score -= 1
+                # Queen can hurt the opponent so subtract 3.5
+                elif(card == MoveType.queen_of_spades):
+                    current_score -= 3.5
+                # Eights are valuable so subtract 0.5
+                elif(card == MoveType.eight):
+                    current_score -= 0.5
+                # Jacks can hurt opponent so subtract 0.5
+                elif(card == MoveType.jack):
+                    current_score -= 0.5
+
+            # Store the score
+            if(i == PlayerType.human):
+                human_score = current_score
+            else:
+                computer_score = current_score
+
+        # If computer has a lower score, return 1 since
+        # We predict he has a better chance to win.
+        if(computer_score < human_score):
+            return 1
+        # If computer has a lower score, return -1 since
+        # we predict he has a better chance to lose.
+        elif(human_score < computer_score):
+            return -1
+        # If both have the same score, look at their mins
+        else:
+            if(min(human_hand) > min(computer_hand)):
+                return 1
+            else:
+                return -1
+
+
+def at_game_end(game_deck, human_player_hand, computer_player_hand):
+    '''
+    Checks to see if the game has been completed.
+
+    :param int game_deck: List of cards remaining in the game deck.
+    :param int human_player_hand: List of cards in the human's hand.
+    :param int computer_player_hand: List of cards in the computer's hand.
+
+    >>> terminal_test([],[6,8],[5])
+    True
+    >>> terminal_test([945],[6,8],[5])
+    False
+    >>> terminal_test([945],[],[5])
+    True
+    >>> terminal_test([945],[5],[])
+    True
+    >>> terminal_test([945],[],[])
+    True
+    >>> terminal_test([],[],[])
+    True
+    '''
+    return (len(game_deck) == 0 or len(human_player_hand) == 0
+            or len(computer_player_hand) == 0)
+
+
+def determine_winner(human_hand, computer_hand):
+    '''
+    At the end of a game, it terms the winning player.
+
+    :param int[] human_hand: Cards in the human player's hand.
+    :param int[] computer_hand: Cards in the computer player's hand.
+
+    :returns: PlayerType.human if the human won. Otherwise PlayerType.Computer
+
+    >>> determine_winner([], [])
+    Traceback (most recent call last):
+        ...
+    ValueError: Both human and computer hands cannot be empty.
+    >>> determine_winner([], [5, 8, 9])
+    0
+    >>> determine_winner([], [5])
+    0
+    >>> determine_winner([5, 8, 9], [])
+    1
+    >>> determine_winner([5, 50, 4], [2])
+    1
+    >>> determine_winner([2, 800], [5, 50, 4])
+    0
+    '''
+
+    if(len(human_hand) == len(computer_hand) == 0):
+        raise ValueError("Both human and computer hands cannot be empty.")
+
+    # Case #1: Human has less cards so s/he wins.
+    if(len(human_hand) < len(computer_hand)):
+        return PlayerType.human
+
+    # Case #2: Computer has less cards so it wins.
+    elif(len(human_hand) > len(computer_hand)):
+        return PlayerType.computer
+
+    # Case #3: Computer and player have same number of cards so
+    # the person with the lowest value card in their hand wins.
+    else:
+        # If the minimum card is in the computer's hand, it won.
+        # Otherwise the human player one.
+        if(min(computer_hand) < min(human_hand)):
+            return PlayerType.computer
+        else:
+            print PlayerType.human
+
+
+def check_and_print_victory_conditions(human_hand, computer_hand):
+    '''
+    At the end of a game, this function checks to see which player one.
+    After checking who won, it prints a message to the console.
+
+    :params None.
+
+    :returns: None.
+
+    Only side effect is printing a message to the screen.
+
+    >>> check_and_print_victory_conditions([], [5, 8, 9])
+    You won.  However, you still are awful.
+    >>> check_and_print_victory_conditions([], [5])
+    You won.  However, you still are awful.
+    >>> check_and_print_victory_conditions([5, 8, 9], [])
+    The computer won. You are a huge loser.
+    >>> check_and_print_victory_conditions([5, 50, 4], [2])
+    The computer won. You are a huge loser.
+    >>> check_and_print_victory_conditions([2, 800], [5, 50, 4])
+    You won.  However, you still are awful.
+    '''
+
+    if(determine_winner(human_hand, computer_hand) == PlayerType.human):
+        print "You won.  However, you still are awful."
+    else:
+        print "The computer won. You are a huge loser."
 
 
 def get_card_rank(card_number):

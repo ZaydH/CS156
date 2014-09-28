@@ -90,51 +90,6 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
     return human_player_move
 
 
-def check_and_print_victory_conditions():
-    '''
-    At the end of a game, this function checks to see which player one.
-    After checking who won, it prints a message to the console.
-
-    :params None.
-
-    :returns: None.
-
-    Only side effect is printing a message to the screen.
-    '''
-    human_winning_string = "You won.  However, you still stink."
-    computer_winning_string = "The computer won. You are a huge loser."
-
-    # Case #1: Human has less cards so s/he wins.
-    if(len(human_player_hand) < len(computer_player_hand)):
-        print human_winning_string
-
-    # Case #2: Computer has less cards so it wins.
-    elif(len(human_player_hand) > len(computer_player_hand)):
-        print computer_winning_string
-
-    # Case #3: Computer and player have same number of cards so
-    # the person with the lowest value card in their hand wins.
-    else:
-        # Set the minimum card value for both
-        min_human_card = min_computer_card = cards_per_deck
-        # Get the smallest card in the human player's hand.
-        for i in range(0, len(human_player_hand)):
-            # Check if current card is less than current minimum
-            if(human_player_hand[i] < min_human_card):
-                min_human_card = human_player_hand[i]
-
-        # Get the smallest card in the computer player's hand.
-        for i in range(0, len(computer_player_hand)):
-            # Check if current card is less than current minimum
-            if(computer_player_hand[i] < min_computer_card):
-                min_computer_card = computer_player_hand[i]
-
-        if(min_computer_card < min_human_card):
-            print computer_winning_string
-        else:
-            print human_winning_string
-
-
 # Build the deck for the game as well as the player's hands.
 game_deck = build_initial_deck()
 human_player_hand, game_deck = draw_cards(game_deck, 8)
@@ -181,8 +136,7 @@ play_history = [last_move]
 
 
 #  Continue playing the game until the deck is empty.
-while(len(game_deck) > 0 and len(human_player_hand) > 0
-      and len(computer_player_hand) > 0):
+while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Display the play history until this point.
     print "\nCurrent Play History:"
@@ -254,4 +208,4 @@ while(len(game_deck) > 0 and len(human_player_hand) > 0
         current_player = (current_player+1) % 2
 
 # Once the deck is empty, check and print who won.
-check_and_print_victory_conditions()
+check_and_print_victory_conditions(human_player_hand, computer_player_hand)

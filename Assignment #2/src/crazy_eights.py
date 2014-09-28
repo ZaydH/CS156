@@ -55,7 +55,7 @@ class SimplifiedState:
     '''
 
     # Stores whether the computer is min or max.
-    _computer_minimax_type = -1
+    computer_minimax_type = -1
 
     def __init__(self, previous_move_types, deck,
                  players_turn, human_hand,
@@ -341,11 +341,15 @@ class SimplifiedState:
         if(not self.is_end_state()):
             raise RuntimeError("Cannot get winning score if not end state.")
 
-        if(get_winner(self._human_hand, self._computer_hand)
-           == PlayerType.human):
-            return -1*cards_per_deck
-        else:
+        winning_player = get_winner(self._human_hand, self._computer_hand)
+        current_player = self._current_player
+
+        # If the current player is the winning player, return max score.
+        # otherwise return the minimum score.
+        if((winning_player == current_player)):
             return cards_per_deck
+        else:
+            return -1*cards_per_deck
 
     def get_heuristic_score(self):
         '''
@@ -507,7 +511,29 @@ class CrazyEight:
                                                 face_up_card,
                                                 active_suit)
 
-        # TODO Handle selection of best move.
+        # Initialize the best score variable.
+        if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max):
+            best_score = -sys.maxint - 1
+        else:
+            best_score = sys.maxint
+
+        # Iterate through the possible moves
+        for next_move in possible_moves:
+            # Generate a successor state.
+            temp_state = starting_simple_state.generate_next_state(next_move)
+            # Get the score for that state.
+            temp_score = CrazyEight.h_minimax(temp_state, 1)
+            # Check whether this score is better.
+            if((SimplifiedState.computer_minimax_type == MinimaxPlayer.max and
+                temp_score > best_score) or
+                (SimplifiedState.computer_minimax_type == MinimaxPlayer.min and
+                 temp_score < best_score)):
+                # Update best_move and best_score
+                best_score = temp_score
+                best_move = next_move
+
+        # Return the best move
+        return best_move
 
     @staticmethod
     def h_minimax(simple_state, recursion_depth):
@@ -524,9 +550,9 @@ class CrazyEight:
 
             # Determine whether to use max.
             if((simple_state.get_current_player() == PlayerType.computer
-               and SimplifiedState._computer_minimax_type == MinimaxPlayer.max)
+               and SimplifiedState.computer_minimax_type == MinimaxPlayer.max)
                or (simple_state.get_current_player() == PlayerType.human and
-               SimplifiedState._computer_minimax_type == MinimaxPlayer.min)):
+               SimplifiedState.computer_minimax_type == MinimaxPlayer.min)):
                 use_max = True
                 current_score = sys.maxint
             else:
@@ -658,7 +684,7 @@ class CrazyEight:
         return possible_moves
 
     @staticmethod
-    def heuristic_eval_function(human_hand, computer_hand):
+    def heuristic_eval_function(current_player, human_hand, computer_hand):
         '''
         Function used when the cut-off test is met in the Minimax
         algorithm.
@@ -727,9 +753,18 @@ class CrazyEight:
         else:
             human_score += 0.5
 
+        # Utility score depends on who the current player is
+        if(current_player == PlayerType.computer):
+            score_difference = computer_score - human_score
+        else:
+            score_difference = human_score - computer_score
+
         # Return the heuristic score. It has to be less than the score
         # for a winning board.
-        return min(cards_per_deck-1, computer_score - human_score)
+        if(score_difference > 0):
+            return min(cards_per_deck-1, computer_score - human_score)
+        else:
+            return max(-cards_per_deck+1, computer_score - human_score)
 
 
 def at_game_end(game_deck, human_player_hand, computer_player_hand):

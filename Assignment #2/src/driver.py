@@ -223,6 +223,8 @@ while(len(game_deck) > 0 and len(human_player_hand) > 0
         # Check if the current player is the computer
         if(current_player == PlayerType.computer):
             computer_player_hand += drawn_cards
+            # TODO Remove computer hand sorting.
+            computer_player_hand.sort()
         # Check if the current player is the human
         elif(current_player == PlayerType.human):
             # Extract the cards to be drawn by the player.
@@ -232,13 +234,14 @@ while(len(game_deck) > 0 and len(human_player_hand) > 0
                 print "You drew card: ", drawn_cards
             # Add the drawn cards to the player's hand
             human_player_hand += drawn_cards
+            human_player_hand.sort()
 
     #  Check if on the last turn a player discarded a card
     discarded_card = get_discard(play_history[len(play_history) - 1])
     if(discarded_card != 0 and numb_cards_to_draw == 0):
         # Store the discarded card and get its suit
         face_up_card = discarded_card
-        active_suit = get_card_suit(face_up_card)
+        active_suit = get_suit(last_move)
 
         if(current_player == PlayerType.human):
             human_player_hand.remove(discarded_card)

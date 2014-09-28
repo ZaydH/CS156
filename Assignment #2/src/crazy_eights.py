@@ -694,17 +694,17 @@ class CrazyEight:
 
         @returns: 1 if computer has greater chance to win, -1 otherwise.
 
-        >>> CrazyEight.heuristic_eval_function([3,4],[2,5])
-        1
-        >>> CrazyEight.heuristic_eval_function([4],[2,5])
-        -1
-        >>> CrazyEight.heuristic_eval_function([6,5,2],[2,5])
-        1
-        >>> CrazyEight.heuristic_eval_function([],[5])
+        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[3,4],[2,5])
+        -0.5
+        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[4],[2,5])
+        0.5
+        >>> CrazyEight.heuristic_eval_function(PlayerType.computer,[6,3],[2])
+        1.5
+        >>> CrazyEight.heuristic_eval_function(PlayerType.computer,[],[5])
         Traceback (most recent call last):
             ...
         ValueError: The human and computer hands must have at least 1 card
-        >>> CrazyEight.heuristic_eval_function([5],[])
+        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[5],[])
         Traceback (most recent call last):
             ...
         ValueError: The human and computer hands must have at least 1 card
@@ -762,9 +762,9 @@ class CrazyEight:
         # Return the heuristic score. It has to be less than the score
         # for a winning board.
         if(score_difference > 0):
-            return min(cards_per_deck-1, computer_score - human_score)
+            return min(cards_per_deck-1, score_difference)
         else:
-            return max(-cards_per_deck+1, computer_score - human_score)
+            return max(-cards_per_deck+1, score_difference)
 
 
 def at_game_end(game_deck, human_player_hand, computer_player_hand):
@@ -801,7 +801,7 @@ def get_winner(human_hand, computer_hand):
 
     @return: PlayerType.human if the human won. Otherwise PlayerType.Computer
 
-    >>> determine_winner([], [])
+    >>> get_winner([], [])
     Traceback (most recent call last):
         ...
     ValueError: Both human and computer hands cannot be empty.

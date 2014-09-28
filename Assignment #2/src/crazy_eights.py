@@ -10,6 +10,8 @@ Team Member #2: Muffins Hammoudeh
 '''
 
 import random
+import sys
+
 
 cards_per_deck = 52
 
@@ -53,7 +55,7 @@ class SimplifiedState:
     '''
 
     # Stores whether the computer is min or max.
-    _computer_minimax_player = -1
+    _computer_minimax_type = -1
 
     def __init__(self, previous_move_types, deck,
                  players_turn, human_hand,
@@ -70,6 +72,26 @@ class SimplifiedState:
         _computer_hand = computer_hand
         _face_up_card = face_up_card
         _active_suit = active_suit
+
+    def generate_all_moves(self):
+        '''
+        For a given simplified state, return the set of all possible moves.
+
+        @return: List of all possible successor Move tuples.
+        '''
+
+        # Determine the current player hand.
+        if(self._players_turn == PlayerType.computer):
+            player_hand = self._computer_hand
+        else:
+            player_hand = self._player_hand
+
+        # Return a list of possible moves.
+        return CrazyEight.generate_all_moves(self._players_turn,
+                                             self._previous_move_type,
+                                             player_hand,
+                                             self._face_up_card,
+                                             self._active_suit)
 
     def generate_next_state(self, new_move):
         '''
@@ -117,6 +139,14 @@ class SimplifiedState:
 
         # Return the successor state.
         return next_state
+
+    def get_current_player(self):
+        '''
+        Accessor to get the current player of this state.
+
+        @return: SimplifiedState's current player.
+        '''
+        return self._current_player
 
     @staticmethod
     def process_discarded_card(last_move, human_hand, computer_hand,
@@ -281,6 +311,54 @@ class SimplifiedState:
         # Update the player number
         return (current_player + 1) % 2
 
+    def cutoff_test(self, recursion_depth):
+        '''
+        Cutoff test for the minimax algorithm
+
+        @param int recursion_depth: Current depth of the recursion.
+
+        @return: True if the game has end or the maximum recursion
+            depth has been exceeded.
+        '''
+        return (self._is_game_end()
+                or recursion_depth == CrazyEight._maximum_depth)
+
+    def is_game_end(self):
+        '''
+        Checks if this state is a terminal state.
+
+        @return: True if terminal state, false otherwise.
+        '''
+        return at_game_end(self._game_deck, self._human_hand,
+                           self._computer_hand)
+
+    def get_winner_score(self):
+        '''
+        Gets the winning score for this state.
+
+        @return: cards_per_deck if the computer won, -52 otherwise.
+        '''
+        if(not self.is_end_state()):
+            raise RuntimeError("Cannot get winning score if not end state.")
+
+        if(get_winner(self._human_hand, self._computer_hand)
+           == PlayerType.human):
+            return -1*cards_per_deck
+        else:
+            return cards_per_deck
+
+    def get_heuristic_score(self):
+        '''
+        Uses a heuristic to predict the winner.
+
+        @returns: 1 if computer predicted to win, 0 otherwise.
+        '''
+        if(self.is_game_end()):
+            return self.get_winner_score()
+        else:
+            return CrazyEight.heuristic_eval_function(self._human_hand,
+                                                      self._computer_hand)
+
 
 class CrazyEight:
 
@@ -384,11 +462,15 @@ class CrazyEight:
         :returns: Best possible move given the state and search depth.
         '''
 
+        # Extract the full state information
+        deck = state[0]
+        human_player_hand = state[1]
+
         # Extract the partial state information from the state object.
         partial_state = state[2]
         face_up_card = partial_state[0]
         active_suit = partial_state[1]
-        computer_hand = partial_state[2]
+        computer_player_hand = partial_state[2]
         history = partial_state[3]
 
         # Get the first move to determine minimax type.
@@ -404,7 +486,8 @@ class CrazyEight:
         possible_moves = \
             CrazyEight.generate_all_moves(PlayerType.computer,
                                           previous_move_type,
-                                          computer_hand, face_up_card,
+                                          computer_player_hand,
+                                          face_up_card,
                                           active_suit)
 
         # TODO Remove possible moves checker.
@@ -415,6 +498,56 @@ class CrazyEight:
         # If only one move is possible, just return that.
         if(len(possible_moves) == 1):
             return possible_moves[0]
+
+        # Create a SimplifiedState object to use in minimax.
+        starting_simple_state = SimplifiedState(previous_move_type,
+                                                deck, PlayerType.computer,
+                                                human_player_hand,
+                                                computer_player_hand,
+                                                face_up_card,
+                                                active_suit)
+
+        # TODO Handle selection of best move.
+
+    @staticmethod
+    def h_minimax(simple_state, recursion_depth):
+        '''
+        '''
+
+        # If cut_off condition has been met, return the score.
+        if(simple_state.cutoff_test(recursion_depth)):
+            return simple_state.get_heuristic_score()
+
+        else:
+            # Create a list of possible moves.
+            possible_moves = simple_state.generate_all_moves()
+
+            # Determine whether to use max.
+            if((simple_state.get_current_player() == PlayerType.computer
+               and SimplifiedState._computer_minimax_type == MinimaxPlayer.max)
+               or (simple_state.get_current_player() == PlayerType.human and
+               SimplifiedState._computer_minimax_type == MinimaxPlayer.min)):
+                use_max = True
+                current_score = sys.maxint
+            else:
+                use_max = False
+                current_score = -sys.maxint-1
+
+            # Iterate through the possible moves.
+            for next_move in possible_moves:
+                # Generate the successor state
+                temp_state = simple_state.generate_next_state(next_move)
+
+                # Get the score for that state.
+                temp_score = CrazyEight.h_minimax(temp_state,
+                                                  recursion_depth + 1)
+                # Update current score
+                if((use_max and temp_score > current_score)
+                   or (not use_max and temp_score < current_score)):
+                    current_score = temp_score
+
+        # Return the score.
+        return current_score
 
     @staticmethod
     def generate_all_moves(player, previous_move_type, player_hand,
@@ -530,10 +663,10 @@ class CrazyEight:
         Function used when the cut-off test is met in the Minimax
         algorithm.
 
-        :param int human_hand: List of integers for cards in human's hand
-        :param int computer_hand: List of integers for cards in computer's hand
+        @param int human_hand: List of integers for cards in human's hand
+        @param int computer_hand: List of integers for cards in computer's hand
 
-        :returns: 1 if computer has greater chance to win, -1 otherwise.
+        @returns: 1 if computer has greater chance to win, -1 otherwise.
 
         >>> CrazyEight.heuristic_eval_function([3,4],[2,5])
         1
@@ -565,52 +698,47 @@ class CrazyEight:
                 current_hand = computer_hand
 
             # Start by looking at size of one's hand.
-            current_score = len(current_hand)
+            opponent_score = len(current_hand)
 
             # Correct for good quality cards
             for card in current_hand:
                 # In case of two, could hurt opponent so subtract 1
                 if(card == MoveType.two):
-                    current_score -= 1
+                    opponent_score -= 1
                 # Queen can hurt the opponent so subtract 3.5
                 elif(card == MoveType.queen_of_spades):
-                    current_score -= 3.5
+                    opponent_score -= 3.5
                 # Eights are valuable so subtract 0.5
                 elif(card == MoveType.eight):
-                    current_score -= 0.5
+                    opponent_score -= 0.5
                 # Jacks can hurt opponent so subtract 0.5
                 elif(card == MoveType.jack):
-                    current_score -= 0.5
+                    opponent_score -= 0.5
 
             # Store the score
             if(i == PlayerType.human):
-                human_score = current_score
+                computer_score = opponent_score
             else:
-                computer_score = current_score
+                human_score = opponent_score
 
-        # If computer has a lower score, return 1 since
-        # We predict he has a better chance to win.
-        if(computer_score < human_score):
-            return 1
-        # If computer has a lower score, return -1 since
-        # we predict he has a better chance to lose.
-        elif(human_score < computer_score):
-            return -1
-        # If both have the same score, look at their mins
+        # Give a bonus in case of min card
+        if(min(human_hand) > min(computer_hand)):
+            computer_score += 0.5
         else:
-            if(min(human_hand) > min(computer_hand)):
-                return 1
-            else:
-                return -1
+            human_score += 0.5
+
+        # Return the heuristic score. It has to be less than the score
+        # for a winning board.
+        return min(cards_per_deck-1, computer_score - human_score)
 
 
 def at_game_end(game_deck, human_player_hand, computer_player_hand):
     '''
     Checks to see if the game has been completed.
 
-    :param int game_deck: List of cards remaining in the game deck.
-    :param int human_player_hand: List of cards in the human's hand.
-    :param int computer_player_hand: List of cards in the computer's hand.
+    @param int game_deck: List of cards remaining in the game deck.
+    @param int human_player_hand: List of cards in the human's hand.
+    @param int computer_player_hand: List of cards in the computer's hand.
 
     >>> at_game_end([],[6,8],[5])
     True
@@ -629,28 +757,28 @@ def at_game_end(game_deck, human_player_hand, computer_player_hand):
             or len(computer_player_hand) == 0)
 
 
-def determine_winner(human_hand, computer_hand):
+def get_winner(human_hand, computer_hand):
     '''
     At the end of a game, it terms the winning player.
 
-    :param int[] human_hand: Cards in the human player's hand.
-    :param int[] computer_hand: Cards in the computer player's hand.
+    @param int[] human_hand: Cards in the human player's hand.
+    @param int[] computer_hand: Cards in the computer player's hand.
 
-    :returns: PlayerType.human if the human won. Otherwise PlayerType.Computer
+    @return: PlayerType.human if the human won. Otherwise PlayerType.Computer
 
     >>> determine_winner([], [])
     Traceback (most recent call last):
         ...
     ValueError: Both human and computer hands cannot be empty.
-    >>> determine_winner([], [5, 8, 9])
+    >>> get_winner([], [5, 8, 9])
     0
-    >>> determine_winner([], [5])
+    >>> get_winner([], [5])
     0
-    >>> determine_winner([5, 8, 9], [])
+    >>> get_winner([5, 8, 9], [])
     1
-    >>> determine_winner([5, 50, 4], [2])
+    >>> get_winner([5, 50, 4], [2])
     1
-    >>> determine_winner([2, 800], [5, 50, 4])
+    >>> get_winner([2, 800], [5, 50, 4])
     0
     '''
 
@@ -699,7 +827,7 @@ def check_and_print_victory_conditions(human_hand, computer_hand):
     You won.  However, you still are awful.
     '''
 
-    if(determine_winner(human_hand, computer_hand) == PlayerType.human):
+    if(get_winner(human_hand, computer_hand) == PlayerType.human):
         print "You won.  However, you still are awful."
     else:
         print "The computer won. You are a huge loser."

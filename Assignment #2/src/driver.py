@@ -59,7 +59,8 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
     if(previous_move_type == MoveType.queen_of_spades):
         print "Your opponent played a queen of spades."
         print "You are forced to draw five cards."
-        human_player_move = get_special_move(MoveType.queen_of_spades)
+        human_player_move = get_special_move(MoveType.queen_of_spades,
+                                             PlayerType.human)
 
     # For other plays, player is not forced to move.
     else:
@@ -139,8 +140,8 @@ play_history = [last_move]
 while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Display the play history until this point.
-    print "\nCurrent Play History:"
-    print play_history, "\n"
+    print "\n\nCurrent Play History:"
+    print play_history, "\n\n"
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
@@ -153,15 +154,15 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Handle the computer's turn
     elif(current_player == PlayerType.computer):
+
+        # Print the turn
+        print "Computer's Turn:"
         #  Define the partial state.
         partial_state = (face_up_card, active_suit,
                          computer_player_hand, play_history)
-
         #  Extract the computer's move.
         last_move = CrazyEight.move(partial_state)
-
-        # Print the turn
-        print "Computer's Turn:\n"
+        # Print the selected move.
         print "The computer's move was: ", last_move
 
     # Append this move to the play history.
@@ -181,6 +182,12 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):
         current_player = SimplifiedState.update_next_player(current_player)
+    else:
+        if(current_player == PlayerType.computer):
+            print "\n\nThe computer player a jack so you lose your turn.\n\n"
+        else:
+            print "\n\nThe computer lost its turn because you played a jack.\n" \
+                  + "That's low.\n\n"
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions(human_player_hand, computer_player_hand)

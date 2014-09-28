@@ -413,7 +413,7 @@ class CrazyEight:
         # as well as the number of times it was selected.  The more times it
         # was selected, the better the solution.
         proposed_moves = {}
-        for i in range(0, 100):
+        for i in range(0, 10):
 
             # Shuffle the available deck.
             shuffled_deck = shuffle_deck(list(available_cards))
@@ -453,9 +453,9 @@ class CrazyEight:
         # Extract previous move type.
         previous_move_type = check_for_special_move_type(history)
         # Error check that the proposed move is valid.
-        if(check_if_move_valid(previous_move_type, best_move,
-                               PlayerType.computer, computer_hand,
-                               face_up_card, active_suit)):
+        if(not check_if_move_valid(previous_move_type, best_move,
+                                   PlayerType.computer, computer_hand,
+                                   face_up_card, active_suit)):
             raise RuntimeError("Best move selected is invalid.")
 
         # Return the best move.

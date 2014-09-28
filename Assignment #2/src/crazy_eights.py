@@ -89,7 +89,7 @@ class CrazyEight:
         for i in range(0, 100):
 
             # Shuffle the available deck.
-            shuffled_deck = shuffle_deck(available_cards)
+            shuffled_deck = shuffle_deck(list(available_cards))
             # Separate the available cards into the human player's hand
             # and the un-played (available) card set.
             human_player_hand, shuffled_deck = draw_cards(shuffled_deck,

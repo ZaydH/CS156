@@ -192,16 +192,9 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
             human_player_hand.sort()
 
     #  Check if on the last turn a player discarded a card
-    discarded_card = get_discard(play_history[len(play_history) - 1])
-    if(discarded_card != 0 and numb_cards_to_draw == 0):
-        # Store the discarded card and get its suit
-        face_up_card = discarded_card
-        active_suit = get_suit(last_move)
-
-        if(current_player == PlayerType.human):
-            human_player_hand.remove(discarded_card)
-        elif(current_player == PlayerType.computer):
-            computer_player_hand.remove(discarded_card)
+    face_up_card, active_suit =\
+        SimplifiedState.process_discarded_card(last_move, human_player_hand,
+                                               computer_player_hand)
 
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):

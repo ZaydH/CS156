@@ -39,6 +39,62 @@ class PlayerType:
     computer = 1
 
 
+class SimplifiedState:
+
+    def __init__(self, previous_move_types, deck,
+                 human_hand, computer_hand,
+                 face_up_card, active_suit):
+        # Store the class variables
+        _previous_move_type = MoveType
+        _game_deck = deck
+        _human_hand = human_hand
+        _computer_hand = computer_hand
+        _face_up_card = face_up_card
+        _active_suit = active_suit
+
+    def generate_next_state(self, move):
+        # Create a copy of this state.
+        next_state = SimplifiedState(self._previous_move_type,
+                                     list(self._game_deck),
+                                     list(self._human_hand),
+                                     list(self._computer_hand),
+                                     self._face_up_card,
+                                     self._active_suit)
+
+        # Return the successor state.
+        return next_state
+
+    @staticmethod
+    def process_discarded_card(last_move, human_hand, computer_hand):
+        '''
+        This function processes discard operations and updates player hands.
+
+        @param last_move: Last move made.  A Tuple.
+        @param human_hand: List of int's containing cards in player's hand
+        @param computer_hand: List of int's containing cards in computer's hand
+
+        @return face_up_card, active_suit: Next face_up_card and active_suit
+        '''
+
+        discarded_card = get_discard(last_move)
+        numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
+        if(discarded_card != 0 and numb_cards_to_draw == 0):
+            # Store the discarded card and get its suit
+            face_up_card = discarded_card
+            active_suit = get_suit(last_move)
+
+            if(get_player(last_move) == PlayerType.human):
+                human_hand.remove(discarded_card)
+            elif(get_player(last_move) == PlayerType.computer):
+                computer_hand.remove(discarded_card)
+
+        return face_up_card, active_suit
+
+class MinimaxPlayer:
+    max = 0
+    min = 1
+
+
 class CrazyEight:
 
     '''
@@ -148,12 +204,19 @@ class CrazyEight:
         computer_hand = partial_state[2]
         history = partial_state[3]
 
-        # Check if the current move is a special contigency.
+        # Get the first move to determine minimax type.
+        first_move = history[0]
+        # Get the minimax player type. I set up the variables such that
+        # that the enumerated value can match the first player.
+        minimax_player = get_player(first_move)
+
+        # Check if the current move is a special contingency.
         previous_move_type = check_for_special_move_type(history)
 
         # Generate set of possible moves.
         possible_moves = \
             CrazyEight.generate_all_moves(PlayerType.computer,
+                                          previous_move_type,
                                           computer_hand, face_up_card,
                                           active_suit)
 

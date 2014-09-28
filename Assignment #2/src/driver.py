@@ -170,6 +170,7 @@ current_player = (int(entered_string) + 1) % 2
 # Initialize the play history by taking one card off the deck.
 drawn_cards, game_deck = draw_cards(game_deck, 1)  # Draw first discard.
 face_up_card = drawn_cards[0]
+# Only for first play is the active suit guaranteed to be face card suit
 active_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
 last_move = create_move((current_player+1) % 2, face_up_card,

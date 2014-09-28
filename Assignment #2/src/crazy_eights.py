@@ -57,13 +57,6 @@ class CrazyEight:
         computer_hand = partial_state[2]
         history = partial_state[3]
 
-        # Extract current move type.
-        previous_move_type = check_for_special_move_type(history)
-        # Make forced play in case of a queen of spaces.
-        if(previous_move_type == MoveType.queen_of_spades):
-            return get_special_move(MoveType.queen_of_spades,
-                                    PlayerType.computer)
-
         #  Determine available cards in deck and other player's hand.
         numb_human_cards, numb_computer_cards, discarded_cards = \
             parse_play_history(history)
@@ -105,6 +98,8 @@ class CrazyEight:
             # On first loop, best move is the current one.
             if(i == 0):
                 best_move = temp_move
+                # Add first move to the dictionary
+                proposed_moves[temp_move] = 1
             else:
                 # If this move has not been previously proposed,
                 # then add it to the dictionary
@@ -121,6 +116,8 @@ class CrazyEight:
                     temp_move = best_move
 
         # TODO Remove move checker before submitting.
+        # Extract previous move type.
+        previous_move_type = check_for_special_move_type(history)
         # Error check that the proposed move is valid.
         if(check_if_move_valid(previous_move_type, best_move,
                                PlayerType.computer, computer_hand,
@@ -139,13 +136,14 @@ class CrazyEight:
         deck = state[0]
 
         # List of cards in the other player's hand.
-        other_hand = state[1]
+        other_play_hand = state[1]
 
         # Extract the partial state information from the state object.
-        face_up_card = state[2][0]
-        suit = state[2][1]
-        hand = state[2][2]
-        history = state[2][3]
+        partial_state = state[2]
+        face_up_card = partial_state[0]
+        active_suit = partial_state[1]
+        computer_hand = partial_state[2]
+        history = partial_state[3]
 
         # Extract current move type.
         previous_move_type = check_for_special_move_type(history)
@@ -153,6 +151,8 @@ class CrazyEight:
         if(previous_move_type == MoveType.queen_of_spades):
             return get_special_move(MoveType.queen_of_spades,
                                     PlayerType.computer)
+
+        # TODO Implement check of twos.
 
 
 def get_card_rank(card_number):

@@ -165,14 +165,37 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
-        print "Computer's Turn:\n"
+        print "Its your turn.\n"
+
+        move_type = check_for_special_move_type(play_history)
 
         # Check if computer player a queen of spades on last play.
-        if(check_for_special_move_type(play_history)
-           == MoveType.queen_of_spades):
+        if(move_type == MoveType.queen_of_spades):
+            print "Your opponent played a queen of spades."
+            print "You are forced to draw."
             last_move = get_special_move(MoveType.queen_of_spades)
         else:
             print "Your current hand is: ", human_player_hand
+
+            # Last move will be set in the while loop.
+            last_move = None
+            # Keep looping until the player enters a valid move.
+            while(last_move is None):
+
+                print "Moves are in the form: "
+                print "(0, card_number, card_suit, number cards to draw)"
+                input_move_string = raw_input("Enter your move: ")
+
+                # Parse the specified string
+                last_move = parse_move_string(move_type, input_move_string,
+                                              PlayerType.human,
+                                              human_player_hand,
+                                              face_up_card, face_up_suit)
+
+                # Check if the last move was valid.
+                if(last_move is None):
+                    print "The move you entered: ", last_move, " is invalid."
+                    print "Enter a valid move and try again.\n"
 
     # Handle the computer's turn
     elif(current_player == PlayerType.computer):
@@ -185,7 +208,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
         # Print the turn
         print "Computer's Turn:\n"
-        print "Its move was: ", last_move
+        print "The computer's move was: ", last_move
 
     # Append this move to the play history.
     play_history += [last_move]

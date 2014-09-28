@@ -21,6 +21,7 @@ class MoveType:
     two_twos = 4
     three_twos = 6
     four_twos = 8
+    eight = 7
     jack = 10
     queen_of_spades = 11
 
@@ -106,7 +107,28 @@ def get_card_suit(card_number):
     :param int card_number: ID number for a specific card.
 
     :returns: Card's suit.  0 is spade; 1 is heart; 2 is diamond; 3 is clubs.
+
+    >>> get_card_suit(0)
+    0
+    >>> get_card_suit(51)
+    3
+    >>> get_card_suit(13)
+    1
+    >>> get_card_suit(15)
+    1
+    >>> get_card_suit(39)
+    3
+    >>> get_card_suit(-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: card_number must be between 0 and 51
+    >>> get_card_suit(52)
+    Traceback (most recent call last):
+        ...
+    ValueError: card_number must be between 0 and 51
     '''
+    if(card_number < 0 or card_number > 51):
+        raise ValueError("card_number must be between 0 and 51")
     return card_number // 13
 
 
@@ -121,7 +143,7 @@ def check_for_special_move_type(history):
     '''
     # On the first move, regardless of face card, always a normal move.
     if(len(history) == 1):
-        return (MoveType.normal_move, (-1, -1, -1, -1))
+        return MoveType.normal_move
 
     #  Get the last move.
     last_move = history[len(history) - 1]
@@ -198,6 +220,178 @@ def get_special_move(move_type, player_type):
         return create_move(player_type, 0, 0, move_type)
 
 
+def parse_move_string(move_type, input_move, player,
+                      hand, face_up_card, face_up_suit):
+    '''
+    This function parses a specified string and if it is a valid
+    move it, returns that string.  Otherwise, it returns None.
+
+    :param MoveType move_type: Type of move made.
+    :param str input_move: String specified as an input move
+    :param PlayerType player: Current player either human (0) or computer (1)
+    :param int hand: List of cards in the player's hand.
+    :param int face_up_card: 0 to 51 for current face up card.
+    :param int face_up_suit: 0 to 3 value of the suit.
+
+    :returns: Move object in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+        or None if the move is invalid.
+
+    >>> parse_move_string(MoveType.normal_move, "" , 1 , [3,4], 6, 1)
+
+    >>> parse_move_string(MoveType.normal_move, "(" , 1 , [3,4], 6, 1)
+
+    >>> parse_move_string(MoveType.normal_move, "()" , 1 , [3,4], 6, 1)
+
+    >>> parse_move_string(MoveType.normal_move, "(1, 3, 0, dsd)", 1, [3], 6, 1)
+
+    >>> parse_move_string(MoveType.normal_move, "(1, 3, 0, 0)", 1, [3,4], 6, 0)
+    (1, 3, 0, 0)
+    '''
+
+    if(len(input_move) < 2):
+        return None
+
+    # Check for preceding parenthesis
+    if(input_move[0] != "("):
+        return None
+    # Remove initial parenthesis
+    else:
+        input_move = input_move[1:]
+
+    # Check if last character is a parenthesis
+    move_len = len(input_move)
+    if(input_move[move_len - 1] != ")"):
+        return None
+    # Remove the trailing parenthesis
+    else:
+        input_move = input_move[:move_len - 1]
+
+    # Extract the move parameters
+    string_move_parameters = input_move.split(", ")
+    if(len(string_move_parameters) != 4):
+        return None
+
+    # Convert the string parameters to integers.
+    move_param = []  # Create the integer move parameters array
+    for param in string_move_parameters:
+        try:
+            int_param = int(param)
+        except:
+            # Value is not an integer so return None
+            return None
+        # If a valid integer, then append it.
+        move_param.append(int_param)
+
+    # Build the tuple.
+    move = (move_param[0], move_param[1], move_param[2], move_param[3])
+
+    # If the move is valid return it otherwise return None.
+    if(check_if_move_valid(move_type, move, player, hand,
+                           face_up_card, face_up_suit)):
+        return move
+    else:
+        return None
+
+
+def check_if_move_valid(move_type, move, player,
+                        hand, face_up_card, face_up_suit):
+    '''
+    This function parses a specified string and if it is a valid
+    move it, returns that string.  Otherwise, it returns None.
+
+    :param MoveType move_type: Type of move made.
+    :param str input_move: String specified as an input move
+    :param PlayerType player: Current player either human (0) or computer (1)
+    :param int hand: List of cards in the player's hand.
+    :param int face_up_card: 0 to 51 for current face up card.
+    :param int face_up_suit: 0 to 3 value of the suit.
+
+    :returns: True for a valid move and False otherwise.
+
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), -1, [], -1,-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: player must be either 0 or 1
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [], -1,-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: The player's hand must have at least one card.
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [0], -1,-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: face_up_card must be between 0 and 51
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [0], 0,-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: face_up_suit must be between 0 and 3
+    >>> check_if_move_valid(MoveType.normal_move,(1,40,0,0),1,[20,50,40],39,3)
+    True
+    >>> check_if_move_valid(MoveType.normal_move,(1,40,0,1),1,[20,50,40],39,3)
+    False
+    >>> check_if_move_valid(MoveType.normal_move,(1,0,1,1),1,[20,50,40],39,3)
+    False
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [1], 2,0)
+    False
+    >>> check_if_move_valid(MoveType.normal_move, (1, 0, 0, 0), 1, [0],2,0)
+    True
+    >>> check_if_move_valid(MoveType.normal_move, (0, 0, 0, 0), 0, [0],2,0)
+    True
+    >>> check_if_move_valid(MoveType.normal_move, (1, 0, 0, 1), 0, [0], 2,0)
+    False
+    '''
+
+    # Check for valid input conditions.
+    if(player != 0 and player != 1):
+        raise ValueError("player must be either 0 or 1")
+    if(len(hand) == 0):
+        raise ValueError("The player's hand must have at least one card.")
+    if(face_up_card < 0 or face_up_card > 51):
+        raise ValueError("face_up_card must be between 0 and 51")
+    if(face_up_suit < 0 or face_up_suit > 3):
+        raise ValueError("face_up_suit must be between 0 and 3")
+
+    # Extract some information on the move. This is used below.
+    discarded_card = get_discard(move)
+    numb_cards_to_draw = get_number_of_cards_to_draw(move)
+
+    #  Check if the player in the move matches the expected value.
+    if(get_player(move) != player):
+        return False
+
+    # Check special moves here.
+    if(move_type == MoveType.queen_of_spades):
+        return move == get_special_move(MoveType.queen_of_spades, player)
+
+    # Check the case where you need to draw cards.
+    if(move_type == MoveType.one_two or move_type == MoveType.two_twos
+       or move_type == MoveType.three_twos or move_type == MoveType.four_twos):
+        # If the player had to draw on a two, verify the move is valid.
+        if(numb_cards_to_draw > 0):
+            return move == get_special_move(move_type, player)
+        # Check if the move matches what was expected.
+        else:
+            return (get_card_rank(discarded_card) == MoveType.two
+                    and get_card_suit(discarded_card) == get_suit(move))
+
+    # Check the case where you need to draw cards.
+    if(numb_cards_to_draw > 0):
+        if(discarded_card == get_suit(move) == 0):
+            return True
+        else:
+            return False
+
+    # Check if the specified discarded card is in the player's hand.
+    if(not get_discard(move) in hand):
+        return False
+
+    # TODO implement checking for checking of 8's
+
+    # For a discard, check if the suit and/or face card matches
+    return (get_card_rank(discarded_card) == get_card_rank(face_up_card)
+            or get_card_suit(discarded_card) == face_up_suit)
+
+
 def parse_played_history(history):
     '''
     :param tuple history: List of tuples in the format:
@@ -217,10 +411,14 @@ def parse_played_history(history):
 
     # Iterate through the remaining moves
     for i in range(1, len(history)):
+
+        # Get the last move.
+        last_move = history[i]
+
         # Extract the current player, current discarded card, and numb cards
         current_player = history[i][0]
-        current_discard = history[i][1]
-        numb_drawn_cards = history[i][3]
+        current_discard = get_discard(last_move)
+        numb_drawn_cards = get_number_of_cards_to_draw(last_move)
 
         # Check if a card was discarded in the last turn
         # If so, update the list of discard cards and
@@ -278,6 +476,18 @@ def create_move(player_numb, top_of_discard, suit, numb_drawn_cards):
     return (player_numb, top_of_discard, suit, numb_drawn_cards)
 
 
+def get_player(move):
+    '''
+    Extracts from a move the player that made it.
+
+    :param Tuple move: Player move in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    :returns: Integer number for the player.
+    '''
+    return move[0]
+
+
 def get_discard(move):
     '''
     Extracts from a move the discarded card.
@@ -288,6 +498,18 @@ def get_discard(move):
     :returns: Integer number for the discarded card.
     '''
     return move[1]
+
+
+def get_suit(move):
+    '''
+    Extracts from a move the currently active suit.
+
+    :param Tuple move: Player move in the format:
+        (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    :returns: Integer number for the current suit.
+    '''
+    return move[2]
 
 
 def get_number_of_cards_to_draw(move):
@@ -301,3 +523,7 @@ def get_number_of_cards_to_draw(move):
         (player_numb, top_of_discard, suit, numb_drawn_cards)
     '''
     return move[3]
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

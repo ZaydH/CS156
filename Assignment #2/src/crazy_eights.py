@@ -137,12 +137,9 @@ class CrazyEight:
     def move_perfect_knowledge(state):
         '''
         :param tuple state: Tuple in the form (deck, other_hand, partial_state)
-        '''
-        # Extract the deck.
-        deck = state[0]
 
-        # List of cards in the other player's hand.
-        other_play_hand = state[1]
+        :returns: Best possible move given the state and search depth.
+        '''
 
         # Extract the partial state information from the state object.
         partial_state = state[2]
@@ -151,14 +148,131 @@ class CrazyEight:
         computer_hand = partial_state[2]
         history = partial_state[3]
 
-        # Extract current move type.
+        # Check if the current move is a special contigency.
         previous_move_type = check_for_special_move_type(history)
+
+        # Generate set of possible moves.
+        possible_moves = \
+            CrazyEight.generate_all_moves(PlayerType.computer,
+                                          computer_hand, face_up_card,
+                                          active_suit)
+
+        # TODO Remove possible moves checker.
+        if(len(possible_moves) == 0):
+            raise RuntimeError("Error generating moves. One move is "
+                               + "always possible.")
+
+        # If only one move is possible, just return that.
+        if(len(possible_moves) == 1):
+            return possible_moves[0]
+
+    @staticmethod
+    def generate_all_moves(player, previous_move_type, player_hand,
+                           face_up_card, active_suit):
+        '''
+        Builds the set of possible ACTIONs for a given hand, face up
+        card,
+
+        :param PlayerType player: 0 for human, 1 for computer.
+        :param MoveType previous_move_type: Type of previous move.
+        :param int[] player_hand: Cards (ints) in the player's hand.
+        :param int face_up_card: Card on top of the debug pile.
+        :param int active_suit: Currently active suit.
+
+        :returns: List of possible moves where a move is a tuple in the form:
+            (player_num, face_up_card, suit, number_of_cards)
+
+        >>> CrazyEight.generate_all_moves(1, MoveType.queen_of_spades, \
+ [3, 4, 5], 3, 1)
+        [(1, 0, 0, 5)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.queen_of_spades, \
+ [3, 4, 5], 3, 1)
+        [(0, 0, 0, 5)]
+        >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, \
+ [16, 4, 5], 3, 1)
+        [(1, 16, 1, 0), (1, 0, 0, 1)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.normal_move, \
+ [16, 4, 5], 3, 1)
+        [(0, 16, 1, 0), (0, 0, 0, 1)]
+        >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, \
+ [16, 7, 20], 3, 1)
+        [(1, 16, 1, 0), (1, 7, 0, 0), (1, 7, 1, 0), (1, 7, 2, 0),\
+ (1, 7, 3, 0), (1, 20, 0, 0), (1, 20, 1, 0), (1, 20, 2, 0), (1, 20, 3, 0),\
+ (1, 0, 0, 1)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.normal_move, \
+ [16, 7, 20], 3, 1)
+        [(0, 16, 1, 0), (0, 7, 0, 0), (0, 7, 1, 0), (0, 7, 2, 0),\
+ (0, 7, 3, 0), (0, 20, 0, 0), (0, 20, 1, 0), (0, 20, 2, 0), (0, 20, 3, 0),\
+ (0, 0, 0, 1)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.one_two, \
+ [2, 13, 50], 2, 0)
+        [(0, 0, 0, 2)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.two_twos, \
+ [2, 13, 50], 2, 0)
+        [(0, 0, 0, 4)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.three_twos, \
+ [2, 13, 50], 2, 0)
+        [(0, 0, 0, 6)]
+        >>> CrazyEight.generate_all_moves(1, MoveType.three_twos, \
+ [2, 1, 50], 2, 0)
+        [(1, 0, 0, 6), (1, 1, 0, 0)]
+        >>> CrazyEight.generate_all_moves(1, MoveType.three_twos, \
+ [2, 14, 1, 50], 2, 0)
+        [(1, 0, 0, 6), (1, 14, 1, 0), (1, 1, 0, 0)]
+        >>> CrazyEight.generate_all_moves(0, MoveType.four_twos, \
+ [2, 13, 50, 1, 14], 2, 0)
+        [(0, 0, 0, 8)]
+        '''
+
+        # Empty set of possible moves initially.
+        possible_moves = []
+
         # Make forced play in case of a queen of spaces.
         if(previous_move_type == MoveType.queen_of_spades):
-            return get_special_move(MoveType.queen_of_spades,
-                                    PlayerType.computer)
+            temp_move = get_special_move(MoveType.queen_of_spades, player)
+            return[temp_move]
 
-        # TODO Implement check of twos.
+        # If the move is four twos, must pick up. No choice.
+        if(previous_move_type == MoveType.four_twos):
+            temp_move = get_special_move(MoveType.four_twos, player)
+            return[temp_move]
+
+        # Check if the previous move was a two.
+        if(previous_move_type == MoveType.one_two
+           or previous_move_type == MoveType.two_twos
+           or previous_move_type == MoveType.three_twos):
+
+            # Always can pick up
+            possible_moves = [get_special_move(previous_move_type, player)]
+
+            # Check if any twos in the hand.
+            for card in player_hand:
+                if(get_card_rank(card) == MoveType.two):
+                    possible_moves += [create_move(player, card,
+                                                   get_card_suit(card), 0)]
+
+            # Return on these possible moves
+            return possible_moves
+
+        # Check playable cards. Playable moves add to the list.
+        for card in player_hand:
+            # Check special case of an 8.
+            if(get_card_rank(card) == MoveType.eight):
+                # For an eight add all possible suit choices.
+                for i in range(0, 4):
+                    possible_moves += [create_move(player,
+                                                   card, i, 0)]
+            # All other cards but 8 must match either suit or rank.
+            elif(get_card_rank(card) == get_card_rank(face_up_card)
+                 or get_card_suit(card) == active_suit):
+                # If eligible card, add to the array.
+                possible_moves += [create_move(player, card,
+                                               active_suit, 0)]
+
+        # If not a special move, then always can draw a card.
+        possible_moves += [create_move(player, 0, 0, 1)]
+        # Return set of possible moves.
+        return possible_moves
 
     @staticmethod
     def heuristic_eval_function(human_hand, computer_hand):
@@ -248,17 +362,17 @@ def at_game_end(game_deck, human_player_hand, computer_player_hand):
     :param int human_player_hand: List of cards in the human's hand.
     :param int computer_player_hand: List of cards in the computer's hand.
 
-    >>> terminal_test([],[6,8],[5])
+    >>> at_game_end([],[6,8],[5])
     True
-    >>> terminal_test([945],[6,8],[5])
+    >>> at_game_end([945],[6,8],[5])
     False
-    >>> terminal_test([945],[],[5])
+    >>> at_game_end([945],[],[5])
     True
-    >>> terminal_test([945],[5],[])
+    >>> at_game_end([945],[5],[])
     True
-    >>> terminal_test([945],[],[])
+    >>> at_game_end([945],[],[])
     True
-    >>> terminal_test([],[],[])
+    >>> at_game_end([],[],[])
     True
     '''
     return (len(game_deck) == 0 or len(human_player_hand) == 0
@@ -604,6 +718,8 @@ def check_if_move_valid(previous_move_type, move, player,
     True
     >>> check_if_move_valid(MoveType.one_two, (1, 3, 0, 0), 1, [3,1], 2,0)
     False
+    >>> check_if_move_valid(MoveType.four_twos, (1, 0, 0, 8), 1, [3,1], 2,0)
+    True
     >>> check_if_move_valid(MoveType.queen_of_spades, (1, 0, 0, 5),1,[1], 2,0)
     True
     >>> check_if_move_valid(MoveType.queen_of_spades, (1, 0, 0, 4),1,[1], 2,0)
@@ -646,8 +762,7 @@ def check_if_move_valid(previous_move_type, move, player,
     # Check the case where you need to draw cards.
     if(previous_move_type == MoveType.one_two
        or previous_move_type == MoveType.two_twos
-       or previous_move_type == MoveType.three_twos
-       or previous_move_type == MoveType.four_twos):
+       or previous_move_type == MoveType.three_twos):
         # If the player had to draw on a two, verify the move is valid.
         if(numb_cards_to_draw > 0):
             return move == get_special_move(previous_move_type, player)
@@ -655,6 +770,10 @@ def check_if_move_valid(previous_move_type, move, player,
         else:
             return (get_card_rank(discarded_card) == MoveType.two
                     and get_card_suit(discarded_card) == get_suit(move))
+
+    # If four two's played, next move must be a pickup.
+    elif(previous_move_type == MoveType.four_twos):
+        return move == get_special_move(previous_move_type, player)
 
     # Check the case where you need to draw cards.
     if(numb_cards_to_draw > 0):
@@ -911,7 +1030,7 @@ def create_move(player, discarded_card, suit, numb_drawn_cards):
     >>> create_move(1, 0, 0, 7)
     Traceback (most recent call last):
         ...
-    ValueError: numb_drawn cards must be either 0, 1, 2, 4, 5, or 8
+    ValueError: numb_drawn cards must be either 0, 1, 2, 4, 5, 6, or 8
     >>> create_move(1, 1, 0, 5)
     Traceback (most recent call last):
         ...
@@ -933,8 +1052,10 @@ def create_move(player, discarded_card, suit, numb_drawn_cards):
         raise ValueError("suit must be between 0 and 3")
     if(numb_drawn_cards != 0 and numb_drawn_cards != 1
        and numb_drawn_cards != 2 and numb_drawn_cards != 4
-       and numb_drawn_cards != 5 and numb_drawn_cards != 8):
-        raise ValueError("numb_drawn cards must be either 0, 1, 2, 4, 5, or 8")
+       and numb_drawn_cards != 5 and numb_drawn_cards != 6
+       and numb_drawn_cards != 8):
+        raise ValueError("numb_drawn cards must be either 0, 1, 2, 4, 5, 6, "
+                         + "or 8")
     if(numb_drawn_cards > 0 and (discarded_card != 0 or suit != 0)):
         raise ValueError("When discarding cards, discarded_card"
                          + " and suit both must be 0")

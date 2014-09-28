@@ -84,7 +84,7 @@ class SimplifiedState:
         if(self._players_turn == PlayerType.computer):
             player_hand = self._computer_hand
         else:
-            player_hand = self._player_hand
+            player_hand = self._human_hand
 
         # Return a list of possible moves.
         return CrazyEight.generate_all_moves(self._players_turn,
@@ -130,7 +130,6 @@ class SimplifiedState:
         next_state._previous_move_type = \
             SimplifiedState.update_previous_move_type(previous_move_type,
                                                       new_move)
-        next_state._previous_move_type
 
         # Update whose turn it is.
         if(next_state._previous_move_type != MoveType.jack):
@@ -146,7 +145,7 @@ class SimplifiedState:
 
         @return: SimplifiedState's current player.
         '''
-        return self._current_player
+        return self._players_turn
 
     @staticmethod
     def process_discarded_card(last_move, human_hand, computer_hand,
@@ -323,7 +322,7 @@ class SimplifiedState:
         return (self._is_game_end()
                 or recursion_depth == CrazyEight._maximum_depth)
 
-    def is_game_end(self):
+    def _is_game_end(self):
         '''
         Checks if this state is a terminal state.
 
@@ -332,7 +331,7 @@ class SimplifiedState:
         return at_game_end(self._game_deck, self._human_hand,
                            self._computer_hand)
 
-    def get_winner_score(self):
+    def _get_winner_score(self):
         '''
         Gets the winning score for this state.
 
@@ -361,8 +360,8 @@ class SimplifiedState:
 
         @returns: 1 if computer predicted to win, 0 otherwise.
         '''
-        if(self.is_game_end()):
-            return self.get_winner_score()
+        if(self._is_game_end()):
+            return self._get_winner_score()
         else:
             return CrazyEight.heuristic_eval_function(self._human_hand,
                                                       self._computer_hand)
@@ -558,10 +557,10 @@ class CrazyEight:
                or (simple_state.get_current_player() == PlayerType.human and
                SimplifiedState.computer_minimax_type == MinimaxPlayer.min)):
                 use_max = True
-                current_score = sys.maxint
+                current_score = -sys.maxint-1
             else:
                 use_max = False
-                current_score = -sys.maxint-1
+                current_score = sys.maxint
 
             # Iterate through the possible moves.
             for next_move in possible_moves:
@@ -595,6 +594,9 @@ class CrazyEight:
         :returns: List of possible moves where a move is a tuple in the form:
             (player_num, face_up_card, suit, number_of_cards)
 
+        >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, [2], \
+ 15, 1)
+        [(1, 2, 0, 0), (1, 0, 0, 1)]
         >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, [22], \
  48, 3)
         [(1, 22, 1, 0), (1, 0, 0, 1)]

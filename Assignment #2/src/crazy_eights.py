@@ -13,6 +13,10 @@ import random
 import sys
 
 
+#  Define lists used for printing later.
+card_rank_names = ("Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
+                   "Eight", "Nine", "Ten", "Jack", "Queen", "King")
+suit_names = ("Spades", "Hearts", "Diamonds", "Clubs")
 cards_per_deck = 52
 
 
@@ -1455,6 +1459,61 @@ def shuffle_deck(valid_cards):
 
     #  Return the shuffled deck.
     return valid_cards
+
+
+def print_move_action(last_move):
+    '''
+    This function takes a move input and prints a descriptive string.
+    This is not a necessary function but is done for improved readbility
+    and debug by the human player.
+
+    @param last_move: Move Tuple
+
+    >>> print_move_action((1, 0, 0, 1))
+    The computer selected to draw 1 card
+    >>> print_move_action((0, 0, 0, 5))
+    You selected to draw 5 cards
+    >>> print_move_action((0, 1, 0, 0))
+    You played a Two with suit Spades [0].
+    >>> print_move_action((1, 20, 2, 0))
+    The computer played a Eight with suit Diamonds [2].
+    '''
+
+    # Extract number of cards to draw (if any)
+    numb_discard = get_number_of_cards_to_draw(last_move)
+    temp_discarded_card = get_discard(last_move)
+    temp_discarded_card = get_card_rank(temp_discarded_card)
+    temp_active_suit = get_suit(last_move)
+    move_player = get_player(last_move)
+
+    # Print for a draw.
+    if(numb_discard > 0):
+
+        # Define the print string
+        card_string = str(numb_discard) + " card"
+        if(numb_discard > 1):
+            card_string += "s"
+
+        # Select P
+        if(move_player == PlayerType.human):
+            print "You selected to draw " + card_string
+        else:
+            print "The computer selected to draw " + card_string
+
+    else:
+        # Get the string for the card and suit
+        rank_string = card_rank_names[temp_discarded_card]
+        suit_string = suit_names[temp_active_suit]
+
+        # Create the card string.
+        card_string = " played a " + rank_string + " with suit " \
+                      + suit_string + " [" + str(temp_active_suit) + "]."
+
+        # Print the discarded card string.
+        if(move_player == PlayerType.human):
+            print "You" + card_string
+        else:
+            print "The computer" + card_string
 
 
 def create_move(player, discarded_card, suit, numb_drawn_cards):

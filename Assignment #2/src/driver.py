@@ -101,7 +101,7 @@ computer_player_hand.sort()
 
 print "Welcome to the Wild, Weird, and Funky World of Crazy Eights.\n"
 print "I am generous enough to give you the option to choose whether"
-print " you want  go first or second.\n"
+print "you want to go first or second.\n"
 
 # Have the user enter whether they are going first or second.
 entered_string = ""

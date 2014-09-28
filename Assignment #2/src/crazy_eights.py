@@ -65,13 +65,13 @@ class SimplifiedState:
         Constructor
         '''
         # Store the class variables
-        _previous_move_type = MoveType
-        _game_deck = deck
-        _players_turn = players_turn
-        _human_hand = human_hand
-        _computer_hand = computer_hand
-        _face_up_card = face_up_card
-        _active_suit = active_suit
+        self._previous_move_type = MoveType
+        self._game_deck = deck
+        self._players_turn = players_turn
+        self._human_hand = human_hand
+        self._computer_hand = computer_hand
+        self._face_up_card = face_up_card
+        self._active_suit = active_suit
 
     def generate_all_moves(self):
         '''
@@ -118,11 +118,11 @@ class SimplifiedState:
                                              False)
 
         # Process a discard
-        next_state.face_up_card, next_state._active_suit = \
+        next_state._face_up_card, next_state._active_suit = \
             SimplifiedState.process_discarded_card(new_move,
                                                    next_state._human_hand,
                                                    next_state._computer_hand,
-                                                   next_state.face_up_card,
+                                                   next_state._face_up_card,
                                                    next_state._active_suit)
 
         # Update the new state's previous_move_type variable.
@@ -342,12 +342,16 @@ class SimplifiedState:
             raise RuntimeError("Cannot get winning score if not end state.")
 
         winning_player = get_winner(self._human_hand, self._computer_hand)
-        current_player = self._current_player
+        comp_minimax = SimplifiedState.computer_minimax_type
 
         # If the current player is the winning player, return max score.
         # otherwise return the minimum score.
-        if((winning_player == current_player)):
+        if((winning_player == PlayerType.computer
+            and comp_minimax == MinimaxPlayer.max)
+           or (winning_player == PlayerType.human
+               and comp_minimax == MinimaxPlayer.min)):
             return cards_per_deck
+        # Return the losing score.
         else:
             return -1*cards_per_deck
 
@@ -481,7 +485,7 @@ class CrazyEight:
         first_move = history[0]
         # Get the minimax player type. I set up the variables such that
         # that the enumerated value can match the first player.
-        SimplifiedState._computer_minimax_player = get_player(first_move)
+        SimplifiedState.computer_minimax_type = get_player(first_move)
 
         # Check if the current move is a special contingency.
         previous_move_type = check_for_special_move_type(history)
@@ -591,6 +595,9 @@ class CrazyEight:
         :returns: List of possible moves where a move is a tuple in the form:
             (player_num, face_up_card, suit, number_of_cards)
 
+        >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, [22], \
+ 48, 3)
+        [(1, 22, 1, 0), (1, 0, 0, 1)]
         >>> CrazyEight.generate_all_moves(1, MoveType.queen_of_spades, \
  [3, 4, 5], 3, 1)
         [(1, 0, 0, 5)]
@@ -676,7 +683,7 @@ class CrazyEight:
                  or get_card_suit(card) == active_suit):
                 # If eligible card, add to the array.
                 possible_moves += [create_move(player, card,
-                                               active_suit, 0)]
+                                               get_card_suit(card), 0)]
 
         # If not a special move, then always can draw a card.
         possible_moves += [create_move(player, 0, 0, 1)]
@@ -684,7 +691,7 @@ class CrazyEight:
         return possible_moves
 
     @staticmethod
-    def heuristic_eval_function(current_player, human_hand, computer_hand):
+    def heuristic_eval_function(human_hand, computer_hand):
         '''
         Function used when the cut-off test is met in the Minimax
         algorithm.
@@ -694,17 +701,17 @@ class CrazyEight:
 
         @returns: 1 if computer has greater chance to win, -1 otherwise.
 
-        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[3,4],[2,5])
+        >>> CrazyEight.heuristic_eval_function([3,4],[2,5])
         -0.5
-        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[4],[2,5])
+        >>> CrazyEight.heuristic_eval_function([4],[2,5])
         0.5
-        >>> CrazyEight.heuristic_eval_function(PlayerType.computer,[6,3],[2])
-        1.5
-        >>> CrazyEight.heuristic_eval_function(PlayerType.computer,[],[5])
+        >>> CrazyEight.heuristic_eval_function([6,3],[2])
+        -1.5
+        >>> CrazyEight.heuristic_eval_function([],[5])
         Traceback (most recent call last):
             ...
         ValueError: The human and computer hands must have at least 1 card
-        >>> CrazyEight.heuristic_eval_function(PlayerType.human,[5],[])
+        >>> CrazyEight.heuristic_eval_function([5],[])
         Traceback (most recent call last):
             ...
         ValueError: The human and computer hands must have at least 1 card
@@ -754,7 +761,7 @@ class CrazyEight:
             human_score += 0.5
 
         # Utility score depends on who the current player is
-        if(current_player == PlayerType.computer):
+        if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max):
             score_difference = computer_score - human_score
         else:
             score_difference = human_score - computer_score

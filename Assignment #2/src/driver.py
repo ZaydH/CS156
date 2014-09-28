@@ -168,33 +168,15 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
     play_history += [last_move]
 
     # Get if any ca1rds need to be drawn in this turn.
-    numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
-    # If cards need to be drawn, then draw them from the deck.
-    if(numb_cards_to_draw > 0):
-
-        # Draw the cards
-        drawn_cards, game_deck = draw_cards(game_deck, numb_cards_to_draw)
-
-        # Check if the current player is the computer
-        if(current_player == PlayerType.computer):
-            computer_player_hand += drawn_cards
-            # TODO Remove computer hand sorting.
-            computer_player_hand.sort()
-        # Check if the current player is the human
-        elif(current_player == PlayerType.human):
-            # Extract the cards to be drawn by the player.
-            if(numb_cards_to_draw > 1):
-                print "You drew cards: ", drawn_cards
-            else:
-                print "You drew card: ", drawn_cards
-            # Add the drawn cards to the player's hand
-            human_player_hand += drawn_cards
-            human_player_hand.sort()
+    SimplifiedState.process_card_drawing(last_move, game_deck,
+                                         human_player_hand,
+                                         computer_player_hand, True)
 
     #  Check if on the last turn a player discarded a card
     face_up_card, active_suit =\
         SimplifiedState.process_discarded_card(last_move, human_player_hand,
-                                               computer_player_hand)
+                                               computer_player_hand,
+                                               face_up_card, active_suit)
 
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):

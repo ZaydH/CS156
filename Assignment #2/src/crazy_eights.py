@@ -11,7 +11,6 @@ Team Member #2: Muffins Hammoudeh
 
 import random
 
-
 cards_per_deck = 52
 
 
@@ -39,6 +38,11 @@ class PlayerType:
     computer = 1
 
 
+class MinimaxPlayer:
+    max = 0
+    min = 1
+
+
 class SimplifiedState:
 
     def __init__(self, previous_move_types, deck,
@@ -52,7 +56,7 @@ class SimplifiedState:
         _face_up_card = face_up_card
         _active_suit = active_suit
 
-    def generate_next_state(self, move):
+    def generate_next_state(self, last_move):
         # Create a copy of this state.
         next_state = SimplifiedState(self._previous_move_type,
                                      list(self._game_deck),
@@ -61,11 +65,26 @@ class SimplifiedState:
                                      self._face_up_card,
                                      self._active_suit)
 
+        # Process a draw.
+        SimplifiedState.process_card_drawing(last_move,
+                                             next_state._game_deck,
+                                             next_state._human_hand,
+                                             next_state._computer_hand,
+                                             False)
+
+        # Process a discard
+        next_state.face_up_card, next_state._active_suit = \
+            SimplifiedState.process_discarded_card(last_move,
+                                                   next_state._human_hand,
+                                                   next_state._computer_hand,
+                                                   next_state.face_up_card,
+                                                   next_state._active_suit)
         # Return the successor state.
         return next_state
 
     @staticmethod
-    def process_discarded_card(last_move, human_hand, computer_hand):
+    def process_discarded_card(last_move, human_hand, computer_hand,
+                               face_up_card, active_suit):
         '''
         This function processes discard operations and updates player hands.
 
@@ -90,9 +109,34 @@ class SimplifiedState:
 
         return face_up_card, active_suit
 
-class MinimaxPlayer:
-    max = 0
-    min = 1
+    @staticmethod
+    def process_card_drawing(last_move, deck, human_hand, computer_hand,
+                             display_human_draw):
+        numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
+        # If cards need to be drawn, then draw them from the deck.
+        if(numb_cards_to_draw > 0):
+
+            # Draw the cards
+            drawn_cards, deck = draw_cards(deck, numb_cards_to_draw)
+
+            # Check if the current player is the computer
+            if(get_player(last_move) == PlayerType.computer):
+                computer_hand += drawn_cards
+                # TODO Remove computer hand sorting.
+                computer_hand.sort()
+            # Check if the current player is the human
+            elif(get_player(last_move) == PlayerType.human):
+
+                # Optional whether print to screen the human's draw.
+                if(display_human_draw):
+                    # Extract the cards to be drawn by the player.
+                    if(numb_cards_to_draw > 1):
+                        print "You drew cards: ", drawn_cards
+                    else:
+                        print "You drew card: ", drawn_cards
+                # Add the drawn cards to the player's hand
+                human_hand += drawn_cards
+                human_hand.sort()
 
 
 class CrazyEight:
@@ -570,6 +614,29 @@ def check_for_special_move_type(history):
     :param tuple history: History of moves to current time.
 
     :returns: An object of type "MoveType"
+
+    >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 1, 0, 0), \
+(1, 27, 0, 0),(0, 40, 0, 0)])
+    8
+    >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 1, 0, 0), \
+(1, 27, 0, 0)])
+    6
+    >>> check_for_special_move_type([(0, 4, 0, 0), (1, 1, 0, 0)])
+    2
+    >>> check_for_special_move_type([(0, 4, 0, 0)])
+    -1
+    >>> check_for_special_move_type([(0, 4, 0, 0),(1, 1, 0, 0),(0, 0, 0, 2)])
+    -1
+    >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 1, 0, 0)])
+    4
+    >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 11, 0, 0)])
+    11
+    >>> check_for_special_move_type([(0, 4, 0, 0),(0, 11, 0, 0),(1, 0, 0, 1)])
+    -1
+    >>> check_for_special_move_type([(0, 4, 0, 0),(0, 11, 0, 0),(1, 10, 0, 0)])
+    10
+    >>> check_for_special_move_type([(0, 4, 0, 0),(0, 11, 0, 0),(1, 36, 0, 0)])
+    10
     '''
     # On the first move, regardless of face card, always a normal move.
     if(len(history) == 1):
@@ -611,9 +678,9 @@ def check_for_special_move_type(history):
             if(get_card_rank(last_discard) == MoveType.two):
                 # Increment the number of twos
                 twos_count += 1
-
-                if(numb_history_elements == 1 + twos_count):
-                    return MoveType.two_twos
+                # Update the last discard.
+                last_discard = get_discard(history[len(history)
+                                                   - twos_count - 1])
 
         # Return the number of twos played in a row,
         if(twos_count == 1):
@@ -668,6 +735,8 @@ def parse_move_string(previous_move_type, input_move, player,
     :returns: Move object in the format:
         (player_numb, top_of_discard, suit, numb_drawn_cards)
         or None if the move is invalid.
+
+    >>> parse_move_string(MoveType.normal_move,"(0, 0, 0, 2)",0,[3,4],6,0)
 
     >>> parse_move_string(MoveType.normal_move, "" , 1 , [3,4], 6, 1)
 
@@ -840,7 +909,10 @@ def check_if_move_valid(previous_move_type, move, player,
 
     # Check the case where you need to draw cards.
     if(numb_cards_to_draw > 0):
-        if(discarded_card == get_suit(move) == 0):
+        # Ensure discarded_card and suit set to zero and
+        # and that you are drawing only one card.
+        if(discarded_card == get_suit(move) == 0
+           and numb_cards_to_draw == 1):
             return True
         else:
             return False

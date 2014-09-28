@@ -58,9 +58,9 @@ class CrazyEight:
         history = partial_state[3]
 
         # Extract current move type.
-        move_type = check_for_special_move_type(history)
+        previous_move_type = check_for_special_move_type(history)
         # Make forced play in case of a queen of spaces.
-        if(move_type == MoveType.queen_of_spades):
+        if(previous_move_type == MoveType.queen_of_spades):
             return get_special_move(MoveType.queen_of_spades,
                                     PlayerType.computer)
 
@@ -122,8 +122,9 @@ class CrazyEight:
 
         # TODO Remove move checker before submitting.
         # Error check that the proposed move is valid.
-        if(check_if_move_valid(move_type, best_move, PlayerType.computer,
-                               computer_hand, face_up_card, active_suit)):
+        if(check_if_move_valid(previous_move_type, best_move,
+                               PlayerType.computer, computer_hand,
+                               face_up_card, active_suit)):
             raise RuntimeError("Best move selected is invalid.")
 
         # Return the best move.
@@ -147,9 +148,9 @@ class CrazyEight:
         history = state[2][3]
 
         # Extract current move type.
-        move_type = check_for_special_move_type(history)
+        previous_move_type = check_for_special_move_type(history)
         # Make forced play in case of a queen of spaces.
-        if(move_type == MoveType.queen_of_spades):
+        if(previous_move_type == MoveType.queen_of_spades):
             return get_special_move(MoveType.queen_of_spades,
                                     PlayerType.computer)
 
@@ -265,34 +266,36 @@ def check_for_special_move_type(history):
     return MoveType.normal_move
 
 
-def get_special_move(move_type, player_type):
+def get_special_move(previous_move_type, player_type):
     '''
     For specified special moves, this function returns the associated
     special move object.
 
-    :param MoveType move_type: Type of move made.
+    :param MoveType previous_move_type: Type of previous move made.
     :param PlayerType player_type: Current player either human or computer.
 
     :returns: Move object in the format:
         (player_numb, top_of_discard, suit, numb_drawn_cards)
     '''
     #  Check for special move for queen of spades
-    if(move_type == MoveType.queen_of_spades):
+    if(previous_move_type == MoveType.queen_of_spades):
         return create_move(player_type, 0, 0, 5)
 
     #  Check for special move for multiple twos
-    if(move_type == MoveType.one_two or move_type == MoveType.two_twos
-       or move_type == MoveType.three_twos or move_type == MoveType.four_twos):
-        return create_move(player_type, 0, 0, move_type)
+    if(previous_move_type == MoveType.one_two
+       or previous_move_type == MoveType.two_twos
+       or previous_move_type == MoveType.three_twos
+       or previous_move_type == MoveType.four_twos):
+        return create_move(player_type, 0, 0, previous_move_type)
 
 
-def parse_move_string(move_type, input_move, player,
+def parse_move_string(previous_move_type, input_move, player,
                       hand, face_up_card, active_suit):
     '''
     This function parses a specified string and if it is a valid
     move it, returns that string.  Otherwise, it returns None.
 
-    :param MoveType move_type: Type of move made.
+    :param MoveType previous_move_type: Type of previous move made.
     :param str input_move: String specified as an input move
     :param PlayerType player: Current player either human (0) or computer (1)
     :param int hand: List of cards in the player's hand.
@@ -355,20 +358,20 @@ def parse_move_string(move_type, input_move, player,
     move = (move_param[0], move_param[1], move_param[2], move_param[3])
 
     # If the move is valid return it otherwise return None.
-    if(check_if_move_valid(move_type, move, player, hand,
+    if(check_if_move_valid(previous_move_type, move, player, hand,
                            face_up_card, active_suit)):
         return move
     else:
         return None
 
 
-def check_if_move_valid(move_type, move, player,
+def check_if_move_valid(previous_move_type, move, player,
                         hand, face_up_card, active_suit):
     '''
     This function parses a specified string and if it is a valid
     move it, returns that string.  Otherwise, it returns None.
 
-    :param MoveType move_type: Type of move made.
+    :param MoveType previous_move_type: Type of move made.
     :param str input_move: String specified as an input move
     :param PlayerType player: Current player either human (0) or computer (1)
     :param int hand: List of cards in the player's hand.
@@ -451,15 +454,17 @@ def check_if_move_valid(move_type, move, player,
         return False
 
     # Check special moves here.
-    if(move_type == MoveType.queen_of_spades):
+    if(previous_move_type == MoveType.queen_of_spades):
         return move == get_special_move(MoveType.queen_of_spades, player)
 
     # Check the case where you need to draw cards.
-    if(move_type == MoveType.one_two or move_type == MoveType.two_twos
-       or move_type == MoveType.three_twos or move_type == MoveType.four_twos):
+    if(previous_move_type == MoveType.one_two
+       or previous_move_type == MoveType.two_twos
+       or previous_move_type == MoveType.three_twos
+       or previous_move_type == MoveType.four_twos):
         # If the player had to draw on a two, verify the move is valid.
         if(numb_cards_to_draw > 0):
-            return move == get_special_move(move_type, player)
+            return move == get_special_move(previous_move_type, player)
         # Check if the move matches what was expected.
         else:
             return (get_card_rank(discarded_card) == MoveType.two

@@ -50,13 +50,13 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
     :returns: Move - The human player's move.
     '''
 
-    print "Its your turn. Player #" + str(player)
+    print "Its your turn player #" + str(player)
     print "Your current hand is: ", human_player_hand, "\n"
 
-    move_type = check_for_special_move_type(play_history)
+    previous_move_type = check_for_special_move_type(play_history)
 
     # Check if computer player a queen of spades on last play.
-    if(move_type == MoveType.queen_of_spades):
+    if(previous_move_type == MoveType.queen_of_spades):
         print "Your opponent played a queen of spades."
         print "You are forced to draw five cards."
         human_player_move = get_special_move(MoveType.queen_of_spades)
@@ -75,9 +75,10 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
                                           + "\n")
 
             # Parse the specified string
-            human_player_move = parse_move_string(move_type, input_move_string,
-                                                  player, player_hand,
-                                                  face_up_card, active_suit)
+            human_player_move = parse_move_string(previous_move_type,
+                                                  input_move_string, player,
+                                                  player_hand, face_up_card,
+                                                  active_suit)
 
             # Check if the last move was valid.
             if(human_player_move is None):
@@ -161,7 +162,6 @@ while(entered_string != "1" and entered_string != "2"):
     entered_string = raw_input("To go first, type \"1\" and press enter. "
                                + "Otherwise to go second,\ntype \"2\" and "
                                + "press enter. Type your selection here:  ")
-    print ""  # Print a blank line.
 
 # Extract from what the user entered as play order
 # the player marked in the initial move.
@@ -172,7 +172,7 @@ drawn_cards, game_deck = draw_cards(game_deck, 1)  # Draw first discard.
 face_up_card = drawn_cards[0]
 active_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
-last_move = create_move(current_player, face_up_card,
+last_move = create_move((current_player+1) % 2, face_up_card,
                         get_card_suit(face_up_card), 0)
 
 # Add initial move to the history
@@ -184,7 +184,7 @@ while(len(game_deck) > 0 and len(human_player_hand) > 0
       and len(computer_player_hand) > 0):
 
     # Display the play history until this point.
-    print "Current Play History:"
+    print "\nCurrent Play History:"
     print play_history, "\n"
 
     # Handle the player's turn

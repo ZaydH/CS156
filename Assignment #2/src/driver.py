@@ -45,6 +45,50 @@ def build_initial_deck():
     return temp_deck
 
 
+def perform_human_player_move(player, player_hand, face_up_card, active_suit):
+    '''
+    :returns: Move - The human player's move.
+    '''
+
+    print "Its your turn. Player #" + str(player)
+    print "Your current hand is: ", human_player_hand, "\n"
+
+    move_type = check_for_special_move_type(play_history)
+
+    # Check if computer player a queen of spades on last play.
+    if(move_type == MoveType.queen_of_spades):
+        print "Your opponent played a queen of spades."
+        print "You are forced to draw five cards."
+        human_player_move = get_special_move(MoveType.queen_of_spades)
+
+    # For other plays, player is not forced to move.
+    else:
+
+        # Last move will be set in the while loop.
+        human_player_move = None
+        # Keep looping until the player enters a valid move.
+        while(human_player_move is None):
+
+            input_move_string = raw_input("Enter your move in form ("
+                                          + str(player) + ", card_number, "
+                                          + "card_suit, number_cards_to_draw):"
+                                          + "\n")
+
+            # Parse the specified string
+            human_player_move = parse_move_string(move_type, input_move_string,
+                                                  player, player_hand,
+                                                  face_up_card, active_suit)
+
+            # Check if the last move was valid.
+            if(human_player_move is None):
+                print ("The move you entered: " + str(input_move_string)
+                       + " is invalid.")
+                print "Enter a valid move and try again.\n"
+
+    # Return the move made by the player.
+    return human_player_move
+
+
 def check_and_print_victory_conditions():
     '''
     At the end of a game, this function checks to see which player one.
@@ -91,9 +135,9 @@ def check_and_print_victory_conditions():
 
 
 # Build the deck for the game as well as the player's hands.
-deck = build_initial_deck()
-human_player_hand = draw_cards(deck, 8)
-computer_player_hand = draw_cards(deck, 8)
+game_deck = build_initial_deck()
+human_player_hand, game_deck = draw_cards(game_deck, 8)
+computer_player_hand, game_deck = draw_cards(game_deck, 8)
 
 # Sort the hand arrays.
 human_player_hand.sort()
@@ -124,9 +168,9 @@ while(entered_string != "1" and entered_string != "2"):
 current_player = (int(entered_string) + 1) % 2
 
 # Initialize the play history by taking one card off the deck.
-drawn_cards, deck = draw_cards(deck, 1)  # Draw a card to start the deck.
+drawn_cards, game_deck = draw_cards(game_deck, 1)  # Draw first discard.
 face_up_card = drawn_cards[0]
-face_up_suit = get_card_suit(face_up_card)
+active_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
 last_move = create_move(current_player, face_up_card,
                         get_card_suit(face_up_card), 0)
@@ -136,7 +180,7 @@ play_history = [last_move]
 
 
 #  Continue playing the game until the deck is empty.
-while(len(deck) > 0 and len(human_player_hand) > 0
+while(len(game_deck) > 0 and len(human_player_hand) > 0
       and len(computer_player_hand) > 0):
 
     # Display the play history until this point.
@@ -145,43 +189,17 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
-        print "Its your turn.",
-        print "Your current hand is: ", human_player_hand, "\n"
 
-        move_type = check_for_special_move_type(play_history)
-
-        # Check if computer player a queen of spades on last play.
-        if(move_type == MoveType.queen_of_spades):
-            print "Your opponent played a queen of spades."
-            print "You are forced to draw five cards."
-            last_move = get_special_move(MoveType.queen_of_spades)
-        else:
-
-            # Last move will be set in the while loop.
-            last_move = None
-            # Keep looping until the player enters a valid move.
-            while(last_move is None):
-
-                input_move_string = raw_input("Enter your move in form (0, "
-                                              + "card_number, card_suit, " +
-                                              "number_cards_to_draw):\n")
-
-                # Parse the specified string
-                last_move = parse_move_string(move_type, input_move_string,
-                                              PlayerType.human,
+        # Perform the human player's turn.
+        last_move = perform_human_player_move(PlayerType.human,
                                               human_player_hand,
-                                              face_up_card, face_up_suit)
-
-                # Check if the last move was valid.
-                if(last_move is None):
-                    print "The move you entered: ", input_move_string, \
-                        " is invalid."
-                    print "Enter a valid move and try again.\n"
+                                              face_up_card,
+                                              active_suit)
 
     # Handle the computer's turn
     elif(current_player == PlayerType.computer):
         #  Define the partial state.
-        partial_state = (face_up_card, face_up_suit,
+        partial_state = (face_up_card, active_suit,
                          computer_player_hand, play_history)
 
         #  Extract the computer's move.
@@ -200,7 +218,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
     if(numb_cards_to_draw > 0):
 
         # Draw the cards
-        drawn_cards, deck = draw_cards(deck, numb_cards_to_draw)
+        drawn_cards, game_deck = draw_cards(game_deck, numb_cards_to_draw)
 
         # Check if the current player is the computer
         if(current_player == PlayerType.computer):
@@ -220,7 +238,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
     if(discarded_card != 0 and numb_cards_to_draw == 0):
         # Store the discarded card and get its suit
         face_up_card = discarded_card
-        face_up_suit = get_card_suit(face_up_card)
+        active_suit = get_card_suit(face_up_card)
 
         if(current_player == PlayerType.human):
             human_player_hand.remove(discarded_card)

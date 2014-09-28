@@ -287,7 +287,7 @@ def get_special_move(move_type, player_type):
 
 
 def parse_move_string(move_type, input_move, player,
-                      hand, face_up_card, face_up_suit):
+                      hand, face_up_card, active_suit):
     '''
     This function parses a specified string and if it is a valid
     move it, returns that string.  Otherwise, it returns None.
@@ -297,7 +297,7 @@ def parse_move_string(move_type, input_move, player,
     :param PlayerType player: Current player either human (0) or computer (1)
     :param int hand: List of cards in the player's hand.
     :param int face_up_card: 0 to 51 for current face up card.
-    :param int face_up_suit: 0 to 3 value of the suit.
+    :param int active_suit: 0 to 3 value of the suit.
 
     :returns: Move object in the format:
         (player_numb, top_of_discard, suit, numb_drawn_cards)
@@ -356,7 +356,7 @@ def parse_move_string(move_type, input_move, player,
 
     # If the move is valid return it otherwise return None.
     if(check_if_move_valid(move_type, move, player, hand,
-                           face_up_card, face_up_suit)):
+                           face_up_card, active_suit)):
         return move
     else:
         return None
@@ -373,7 +373,7 @@ def check_if_move_valid(move_type, move, player,
     :param PlayerType player: Current player either human (0) or computer (1)
     :param int hand: List of cards in the player's hand.
     :param int face_up_card: 0 to 51 for current face up card.
-    :param int face_up_suit: 0 to 3 value of the suit.
+    :param int active_suit: 0 to 3 value of the suit.
 
     :returns: True for a valid move and False otherwise.
 
@@ -394,7 +394,7 @@ def check_if_move_valid(move_type, move, player,
         ...
     ValueError: active_suit must be between 0 and 3
     >>> check_if_move_valid(MoveType.normal_move,(1,40,0,0),1,[20,50,40],39,3)
-    True
+    False
     >>> check_if_move_valid(MoveType.normal_move,(1,40,0,1),1,[20,50,40],39,3)
     False
     >>> check_if_move_valid(MoveType.normal_move,(1,0,1,1),1,[20,50,40],39,3)
@@ -423,7 +423,11 @@ def check_if_move_valid(move_type, move, player,
     False
     >>> check_if_move_valid(MoveType.normal_move, (1, 7, 1, 0),1,[7,20], 2,0)
     True
-    >>> check_if_move_valid(MoveType.normal_move, (1, 20, 0, 0),1,[20,7], 2,0)
+    >>> check_if_move_valid(MoveType.normal_move, (1, 20, 3, 0),1,[20,7], 2,0)
+    True
+    >>> check_if_move_valid(MoveType.normal_move, (0, 4, 1, 0),0,[5,4],1,0)
+    False
+    >>> check_if_move_valid(MoveType.normal_move, (0, 4, 0, 0),0,[5,4],1,0)
     True
     '''
 
@@ -439,6 +443,7 @@ def check_if_move_valid(move_type, move, player,
 
     # Extract some information on the move. This is used below.
     discarded_card = get_discard(move)
+    specified_discard_suit = get_suit(move)
     numb_cards_to_draw = get_number_of_cards_to_draw(move)
 
     #  Check if the player in the move matches the expected value.
@@ -471,11 +476,15 @@ def check_if_move_valid(move_type, move, player,
     if(discarded_card not in hand):
         return False
 
-    # Handle the case of an 8 special
+    # You can play an 8 at any time.
     if(get_card_rank(discarded_card) == MoveType.eight):
         return True
 
-    # For a discard, check if the suit and/or face card matches
+    # Ensure if I am discarding a card, I specified the right suit.
+    if(specified_discard_suit != get_card_suit(discarded_card)):
+            return False
+
+    # For a general discard, check if the suit and/or face card matches
     return (get_card_rank(discarded_card) == get_card_rank(face_up_card)
             or get_card_suit(discarded_card) == active_suit)
 

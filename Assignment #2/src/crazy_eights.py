@@ -149,9 +149,9 @@ def check_for_special_move_type(history):
     last_move = history[len(history) - 1]
 
     #  Parse the last move.
-    last_discard = get_discard(last_move[1])  # Face up card.
+    last_discard = get_discard(last_move)  # Face up card.
     # Numb of cards picked up in last turn
-    numb_picked_up_cards = get_number_of_cards_to_draw(last_move[3])
+    numb_picked_up_cards = get_number_of_cards_to_draw(last_move)
 
     # If on the last move someone drew, then this turn is always a normal move.
     if(numb_picked_up_cards > 0):
@@ -247,6 +247,8 @@ def parse_move_string(move_type, input_move, player,
 
     >>> parse_move_string(MoveType.normal_move, "(1, 3, 0, 0)", 1, [3,4], 6, 0)
     (1, 3, 0, 0)
+    >>> parse_move_string(MoveType.queen_of_spades,"(1, 0, 0, 5)",1,[3,4],6,0)
+    (1, 0, 0, 5)
     '''
 
     if(len(input_move) < 2):
@@ -339,6 +341,24 @@ def check_if_move_valid(move_type, move, player,
     True
     >>> check_if_move_valid(MoveType.normal_move, (1, 0, 0, 1), 0, [0], 2,0)
     False
+    >>> check_if_move_valid(MoveType.one_two, (1, 0, 0, 1), 1, [0], 2,0)
+    False
+    >>> check_if_move_valid(MoveType.one_two, (1, 0, 0, 2), 1, [0], 2,0)
+    True
+    >>> check_if_move_valid(MoveType.one_two, (1, 1, 0, 0), 1, [3,1], 2,0)
+    True
+    >>> check_if_move_valid(MoveType.one_two, (1, 3, 0, 0), 1, [3,1], 2,0)
+    False
+    >>> check_if_move_valid(MoveType.queen_of_spades, (1, 0, 0, 5),1,[1], 2,0)
+    True
+    >>> check_if_move_valid(MoveType.queen_of_spades, (1, 0, 0, 4),1,[1], 2,0)
+    False
+    >>> check_if_move_valid(MoveType.queen_of_spades, (1, 1, 0, 0),1,[1], 2,0)
+    False
+    >>> check_if_move_valid(MoveType.normal_move, (1, 7, 1, 0),1,[7,20], 2,0)
+    True
+    >>> check_if_move_valid(MoveType.normal_move, (1, 20, 0, 0),1,[20,7], 2,0)
+    True
     '''
 
     # Check for valid input conditions.
@@ -382,10 +402,13 @@ def check_if_move_valid(move_type, move, player,
             return False
 
     # Check if the specified discarded card is in the player's hand.
-    if(not get_discard(move) in hand):
+    if(discarded_card not in hand):
         return False
 
     # TODO implement checking for checking of 8's
+    # Handle the case of an 8 special
+    if(get_card_rank(discarded_card) == MoveType.eight):
+        return True
 
     # For a discard, check if the suit and/or face card matches
     return (get_card_rank(discarded_card) == get_card_rank(face_up_card)
@@ -400,7 +423,8 @@ def parse_played_history(history):
     :returns: Tuple in the form (number_cards_player0, number_cards_player1,
                                  list_of_discarded_cards)
     '''
-    assert(False)
+
+    # TODO In history parser, handle when player is 0/1 and forced picked.
 
     # Each player starts with 8 cards.
     numb_cards_per_player = [8, 8]
@@ -461,19 +485,63 @@ def shuffle_deck(valid_cards):
     return valid_cards
 
 
-def create_move(player_numb, top_of_discard, suit, numb_drawn_cards):
+def create_move(player, discarded_card, suit, numb_drawn_cards):
     '''
     Helper function to create a move for the history list.
 
-    :param int player_numb: 0 for Computer, 1 for Human
-    :param int top_of_card: Rank/Suit number for card on top of discard pile
+    :param int player: 0 for Computer, 1 for Human
+    :param int discarded_card: Rank/Suit number for card on top of discard pile
     :param int suit: Number of the suit
     :param int numb_draw_cards: Number of cards drawn in the turn.
 
     :returns: Tuple in the form:
         (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    >>> create_move(2, 0, 8, -1)
+    Traceback (most recent call last):
+        ...
+    ValueError: player must be either 0 or 1
+    >>> create_move(1, 55, 8, -1)
+    Traceback (most recent call last):
+        ...
+    ValueError: discarded_card must be between 0 and 51
+    >>> create_move(1, 0, 8, -1)
+    Traceback (most recent call last):
+        ...
+    ValueError: suit must be between 0 and 3
+    >>> create_move(1, 0, 0, 7)
+    Traceback (most recent call last):
+        ...
+    ValueError: numb_drawn cards must be either 0, 1, 2, 4, 5, or 8
+    >>> create_move(1, 1, 0, 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: When discarding cards, discarded_card and suit both must be 0
+    >>> create_move(1, 0, 2, 5)
+    Traceback (most recent call last):
+        ...
+    ValueError: When discarding cards, discarded_card and suit both must be 0
+    >>> create_move(1, 25, 2, 0)
+    (1, 25, 2, 0)
     '''
-    return (player_numb, top_of_discard, suit, numb_drawn_cards)
+
+    # Check the input parameters.
+    if(player != 0 and player != 1):
+        raise ValueError("player must be either 0 or 1")
+    if(discarded_card < 0 or discarded_card > 51):
+        raise ValueError("discarded_card must be between 0 and 51")
+    if(suit < 0 or suit > 3):
+        raise ValueError("suit must be between 0 and 3")
+    if(numb_drawn_cards != 0 and numb_drawn_cards != 1
+       and numb_drawn_cards != 2 and numb_drawn_cards != 4
+       and numb_drawn_cards != 5 and numb_drawn_cards != 8):
+        raise ValueError("numb_drawn cards must be either 0, 1, 2, 4, 5, or 8")
+    if(numb_drawn_cards > 0 and (discarded_card != 0 or suit != 0)):
+        raise ValueError("When discarding cards, discarded_card"
+                         + " and suit both must be 0")
+
+    # Return the tuple
+    return (player, discarded_card, suit, numb_drawn_cards)
 
 
 def get_player(move):

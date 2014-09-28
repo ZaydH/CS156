@@ -120,6 +120,9 @@ deck = build_initial_deck()
 human_player_hand = draw_cards(8)
 computer_player_hand = draw_cards(8)
 
+# Sort the hand arrays.
+human_player_hand.sort()
+computer_player_hand.sort()
 
 print "Welcome to the Wild, Weird, and Funky World of Crazy Eights.\n"
 print "I am generous enough to give you the option to choose whether"
@@ -139,6 +142,7 @@ while(entered_string != "1" and entered_string != "2"):
     entered_string = raw_input("To go first, type \"1\" and press enter. "
                                + "Otherwise to go second,\ntype \"2\" and "
                                + "press enter. Type your selection here:  ")
+    print ""  # Print a blank line.
 
 # Extract from what the user entered as play order
 # the player marked in the initial move.
@@ -149,7 +153,7 @@ face_up_card = draw_cards(1)[0]  # Draw a card to start the deck.
 face_up_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
 last_move = create_move(current_player, face_up_card,
-                        get_card_suit(face_up_suit), 0)
+                        get_card_suit(face_up_card), 0)
 
 # Add initial move to the history
 play_history = [last_move]
@@ -165,26 +169,26 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
-        print "Its your turn.\n"
+        print "Its your turn.",
+        print "Your current hand is: ", human_player_hand, "\n"
 
         move_type = check_for_special_move_type(play_history)
 
         # Check if computer player a queen of spades on last play.
         if(move_type == MoveType.queen_of_spades):
             print "Your opponent played a queen of spades."
-            print "You are forced to draw."
+            print "You are forced to draw five cards."
             last_move = get_special_move(MoveType.queen_of_spades)
         else:
-            print "Your current hand is: ", human_player_hand
 
             # Last move will be set in the while loop.
             last_move = None
             # Keep looping until the player enters a valid move.
             while(last_move is None):
 
-                print "Moves are in the form: "
-                print "(0, card_number, card_suit, number cards to draw)"
-                input_move_string = raw_input("Enter your move: ")
+                input_move_string = raw_input("Enter your move in form (0, "
+                                              + "card_number, card_suit, " +
+                                              "number_cards_to_draw):\n")
 
                 # Parse the specified string
                 last_move = parse_move_string(move_type, input_move_string,
@@ -194,7 +198,7 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
                 # Check if the last move was valid.
                 if(last_move is None):
-                    print "The move you entered: ", last_move, " is invalid."
+                    print "The move you entered: ", input_move_string, " is invalid."
                     print "Enter a valid move and try again.\n"
 
     # Handle the computer's turn
@@ -225,9 +229,9 @@ while(len(deck) > 0 and len(human_player_hand) > 0
             # Extract the cards to be drawn by the player.
             drawn_cards = draw_cards(numb_cards_to_draw)
             if(numb_cards_to_draw > 1):
-                print "You drew cards: " + drawn_cards
+                print "You drew cards: ", drawn_cards
             else:
-                print "You drew card: " + drawn_cards
+                print "You drew card: ", drawn_cards
             # Add the drawn cards to the player's hand
             human_player_hand += drawn_cards
 

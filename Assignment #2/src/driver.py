@@ -45,14 +45,56 @@ def build_initial_deck():
     return temp_deck
 
 
+def print_move_action(last_move):
+
+    # Extract number of cards to draw (if any)
+    numb_discard = get_number_of_cards_to_draw(last_move)
+    temp_discarded_card = get_discard(last_move)
+    temp_active_suit = get_suit(last_move)
+    move_player = get_player(last_move)
+
+    # Print for a draw.
+    if(numb_discard > 0):
+
+        # Define the print string
+        card_string = str(numb_discard) + "card"
+        if(numb_discard > 1):
+            card_string += "s"
+
+        # Select P
+        if(move_player == PlayerType.human):
+            print "You selected to draw " + card_string
+        else:
+            print "The computer selected to draw" + card_string
+
+    else:
+        # Get the string for the card and suit
+        rank_string = card_rank_names[temp_discarded_card]
+        suit_string = suit_names[temp_active_suit]
+
+        # Create the card string.
+        card_string = " played a " + rank_string + " with suit " \
+                      + suit_string + " [" + active_suit + "]."
+
+        # Print the discarded card string.
+        if(move_player == PlayerType.human):
+            print "You" + card_string
+        else:
+            print "The computer" + card_string
+
+
 def perform_human_player_move(player, player_hand, face_up_card, active_suit):
     '''
     :returns: Move - The human player's move.
     '''
 
-    print "Its your turn player #" + str(player)
-    print "Your current hand is: ", human_player_hand, "\n"
+    rank_string = card_rank_names[get_card_rank(face_up_card)]
+    suit_string = suit_names[active_suit]
 
+    print "Its your turn player #" + str(player)
+    print "Your current hand is: ", human_player_hand
+    print "The computer played a " + rank_string + " with suit " \
+          + suit_string + " [" + active_suit + "]."
     previous_move_type = check_for_special_move_type(play_history)
 
     # Check if computer player a queen of spades on last play.

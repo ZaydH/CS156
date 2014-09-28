@@ -594,6 +594,10 @@ class CrazyEight:
         :returns: List of possible moves where a move is a tuple in the form:
             (player_num, face_up_card, suit, number_of_cards)
 
+        >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, [50, 33], \
+ 51, 3)
+        [(1, 50, 3, 0), (1, 33, 0, 0), (1, 33, 1, 0), (1, 33, 2, 0),\
+ (1, 33, 3, 0), (1, 0, 0, 1)]
         >>> CrazyEight.generate_all_moves(1, MoveType.normal_move, [2], \
  15, 1)
         [(1, 2, 0, 0), (1, 0, 0, 1)]

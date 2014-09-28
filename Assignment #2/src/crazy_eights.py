@@ -12,6 +12,9 @@ Team Member #2: Muffins Hammoudeh
 import random
 
 
+cards_per_deck = 52
+
+
 class MoveType:
     '''
     '''
@@ -62,6 +65,15 @@ class CrazyEight:
                                     PlayerType.computer)
 
         #  Determine available cards in deck and other player's hand.
+        numb_human_cards, numb_computer_cards, discarded_cards = \
+            parse_play_history(history)
+
+        # If the number of cards in the history does not match the
+        # number the number cards in the computers hand raise an error'''
+        if(numb_computer_cards != len(hand)):
+            raise ValueError("The history and the size of the player's "
+                             + "hand do not match")
+        
 
     @staticmethod
     def move_perfect_knowledge(state):
@@ -405,7 +417,6 @@ def check_if_move_valid(move_type, move, player,
     if(discarded_card not in hand):
         return False
 
-    # TODO implement checking for checking of 8's
     # Handle the case of an 8 special
     if(get_card_rank(discarded_card) == MoveType.eight):
         return True
@@ -415,16 +426,27 @@ def check_if_move_valid(move_type, move, player,
             or get_card_suit(discarded_card) == face_up_suit)
 
 
-def parse_played_history(history):
+def parse_play_history(history):
     '''
     :param tuple history: List of tuples in the format:
                  (player_num, face_up_card, suit, number_of_cards)
 
     :returns: Tuple in the form (number_cards_player0, number_cards_player1,
                                  list_of_discarded_cards)
-    '''
 
-    # TODO In history parser, handle when player is 0/1 and forced picked.
+    >>> parse_play_history([(0,0,0,0)])
+    (8, 8, [0])
+    >>> parse_play_history([(0,1,2,0)])
+    (8, 8, [1])
+    >>> parse_play_history([(0,0,0,0),(1,0,0,1)])
+    (8, 9, [0])
+    >>> parse_play_history([(0,0,0,0),(1,0,0,1),(0,0,0,5)])
+    (13, 9, [0])
+    >>> parse_play_history([ (0,0,0,0),(1,0,0,1),(0,0,0,5),(1,13,1,0) ])
+    (13, 8, [0, 13])
+    >>> parse_play_history([ (0,39,3,0),(1,0,0,1),(0,0,0,5),(1,13,1,0) ])
+    (13, 8, [39, 13])
+    '''
 
     # Each player starts with 8 cards.
     numb_cards_per_player = [8, 8]
@@ -440,22 +462,143 @@ def parse_played_history(history):
         last_move = history[i]
 
         # Extract the current player, current discarded card, and numb cards
-        current_player = history[i][0]
+        current_player = get_player(last_move)
         current_discard = get_discard(last_move)
         numb_drawn_cards = get_number_of_cards_to_draw(last_move)
 
-        # Check if a card was discarded in the last turn
-        # If so, update the list of discard cards and
-        # decrement the players card count.
-        if(current_discard != previous_discard):
+        # If a card was drawn, then update cards per player
+        if(numb_drawn_cards > 0):
+            numb_cards_per_player[current_player] += numb_drawn_cards
+        # Check in the case of a drawn card.
+        elif(current_discard != previous_discard):
+            previous_discard = current_discard
             discarded_cards.append(current_discard)
             numb_cards_per_player[current_player] -= 1
-        else:
-            numb_cards_per_player[current_player] += numb_drawn_cards
 
-        # Return the play history.
-        return (numb_cards_per_player[0], numb_cards_per_player[1],
-                discarded_cards)
+    # Return the play history.
+    return (numb_cards_per_player[0], numb_cards_per_player[1],
+            discarded_cards)
+
+
+def build_available_card_list(hand, discarded_cards):
+    '''
+    Given the player's current hand and the list of discarded cards,
+    build an array containing all unplayed cards.
+
+    :param int hand: List of cards in the player's hand.
+    :param int discarded_cards: List of discarded cards.
+
+    :returns: List of all remaining cards not in the player's hand \
+        and not yet played
+
+    >>> build_available_card_list([],[])
+    Traceback (most recent call last):
+        ...
+    ValueError: A player's hand must have at least 1 card.
+    >>> build_available_card_list([3],[])
+    Traceback (most recent call last):
+        ...
+    ValueError: discarded_cards must have at least 1 card.
+    >>> build_available_card_list([3,4,5,3],[6,7,8,9,10])
+    Traceback (most recent call last):
+        ...
+    RuntimeError: Data set error. A card in the hand and/or discarded card set\
+ is duplicated.
+    >>> build_available_card_list([3,4,5],[6,7,8,9,10,6])
+    Traceback (most recent call last):
+        ...
+    RuntimeError: Data set error. A card in the hand and/or discarded card set\
+ is duplicated.
+    >>> build_available_card_list([3,4,5],[6,7,8,9,10,5])
+    Traceback (most recent call last):
+        ...
+    RuntimeError: Data set error. A card in the hand and/or discarded card set\
+ is duplicated.
+    >>> build_available_card_list([32,4,3,44,11,7,8,9,30,20,34,18,17,16,15],\
+[48,13,12,6,10,21,22,23,24,25,26,27,28])
+    [0, 1, 2, 5, 14, 19, 29, 31, 33, 35, 36, 37, 38, 39, 40, 41,\
+ 42, 43, 45, 46, 47, 49, 50, 51]
+    '''
+
+    # The player must have at least card in his hand.
+    if(len(hand) == 0):
+        raise ValueError("A player's hand must have at least 1 card.")
+
+    # Discarded cards must have at least one card.
+    if(len(discarded_cards) == 0):
+        raise ValueError("discarded_cards must have at least 1 card.")
+
+    # Initially all cards available
+    card_remaining = [True] * cards_per_deck
+
+    # Iterate through all cards in the player hand and mark them not remaining
+    for card in hand:
+        # Check the card is not duplicated in the set.
+        if(not card_remaining[card]):
+            raise RuntimeError("Data set error. A card in the hand and/or "
+                               + "discarded card set is duplicated.")
+        card_remaining[card] = False
+
+    # Iterate through all cards in discarded set and mark them not remaining
+    for card in discarded_cards:
+        # Check the card is not duplicated in the set.
+        if(not card_remaining[card]):
+            raise RuntimeError("Data set error. A card in the hand and/or "
+                               + "discarded card set is duplicated.")
+        card_remaining[card] = False
+
+    # Initialize set of available cards.
+    available_cards = []
+    # Iterate through all the cards
+    for i in range(0, cards_per_deck):
+        if(card_remaining[i]):
+            available_cards.append(i)
+
+    # Check some array was built.
+    if(len(available_cards) == 0):
+        raise RuntimeError("When building the available card list, at the end "
+                           + " it must have at least one element.")
+
+    # Return the built array.
+    return available_cards
+
+
+def draw_cards(deck, max_numb_cards_to_draw):
+    '''
+    Function used to draw cards from the deck.
+
+    :param int max_numb_cards_to_draw: Maximum number of cards the player is
+        supposed to draw. The reason it is referred to as max is because there
+        may not be enough cards on the deck for the size of the draw required.
+
+    :returns: List of cards drawn from the deck.
+
+    >>> draw_cards([], 4)
+    Traceback (most recent call last):
+        ...
+    ValueError: Number of cards in the deck must be more than one
+    >>> draw_cards([5,6,8,9,10,11], 4)
+    [11, 10, 9, 8]
+    >>> draw_cards([10,11], 4)
+    [11, 10]
+    '''
+
+    # Verify a valid deck
+    if(len(deck) == 0):
+        raise ValueError("Number of cards in the deck must be more than one")
+
+    # Determine actual number of cards that will be drawn.
+    numb_cards_to_draw = min(max_numb_cards_to_draw, len(deck))
+
+    # Create array for drawn cards.
+    drawn_cards = [None] * numb_cards_to_draw
+
+    # Draw the cards off the deck
+    for i in range(0, numb_cards_to_draw):
+        drawn_cards[i] = deck.pop()
+
+    # Return the drawn cards.
+    return drawn_cards
 
 
 def shuffle_deck(valid_cards):
@@ -553,6 +696,11 @@ def get_player(move):
 
     :returns: Integer number for the player.
     '''
+
+    # Ensure move is of expected size.
+    if(len(move) != 4):
+        raise ValueError("Move must be a tuple of length 4.")
+
     return move[0]
 
 
@@ -565,6 +713,11 @@ def get_discard(move):
 
     :returns: Integer number for the discarded card.
     '''
+
+    # Ensure move is of expected size.
+    if(len(move) != 4):
+        raise ValueError("Move must be a tuple of length 4.")
+
     return move[1]
 
 
@@ -577,6 +730,11 @@ def get_suit(move):
 
     :returns: Integer number for the current suit.
     '''
+
+    # Ensure move is of expected size.
+    if(len(move) != 4):
+        raise ValueError("Move must be a tuple of length 4.")
+
     return move[2]
 
 
@@ -590,6 +748,11 @@ def get_number_of_cards_to_draw(move):
     :returns: Integer number of cards to draw (>=0) in the form:
         (player_numb, top_of_discard, suit, numb_drawn_cards)
     '''
+
+    # Ensure move is of expected size.
+    if(len(move) != 4):
+        raise ValueError("Move must be a tuple of length 4.")
+
     return move[3]
 
 if __name__ == "__main__":

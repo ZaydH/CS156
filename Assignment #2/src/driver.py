@@ -17,7 +17,7 @@ from crazy_eights import *
 card_rank_names = ("Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
                    "Eight", "Nine", "Ten", "Jack", "Queen", "King")
 suit_names = ("Spades", "Hearts", "Diamonds", "Clubs")
-cards_per_deck = 52
+# cards_per_deck = 52
 
 
 def build_initial_deck():
@@ -43,31 +43,6 @@ def build_initial_deck():
 
     # Return the temporary deck
     return temp_deck
-
-
-def draw_cards(max_numb_cards_to_draw):
-    '''
-    Function used to draw cards from the deck.
-
-    :param int max_numb_cards_to_draw: Maximum number of cards the player is
-        supposed to draw. The reason it is referred to as max is because there
-        may not be enough cards on the deck for the size of the draw required.
-
-    :returns: List of cards drawn from the deck.
-    '''
-
-    # Determine actual number of cards that will be drawn.
-    numb_cards_to_draw = min(max_numb_cards_to_draw, len(deck))
-
-    # Create array for drawn cards.
-    drawn_cards = [None] * numb_cards_to_draw
-
-    # Draw the cards off the deck
-    for i in range(0, numb_cards_to_draw):
-        drawn_cards[i] = deck.pop()
-
-    # Return the drawn cards.
-    return drawn_cards
 
 
 def check_and_print_victory_conditions():
@@ -117,8 +92,8 @@ def check_and_print_victory_conditions():
 
 # Build the deck for the game as well as the player's hands.
 deck = build_initial_deck()
-human_player_hand = draw_cards(8)
-computer_player_hand = draw_cards(8)
+human_player_hand = draw_cards(deck, 8)
+computer_player_hand = draw_cards(deck, 8)
 
 # Sort the hand arrays.
 human_player_hand.sort()
@@ -198,7 +173,8 @@ while(len(deck) > 0 and len(human_player_hand) > 0
 
                 # Check if the last move was valid.
                 if(last_move is None):
-                    print "The move you entered: ", input_move_string, " is invalid."
+                    print "The move you entered: ", input_move_string, \
+                        " is invalid."
                     print "Enter a valid move and try again.\n"
 
     # Handle the computer's turn
@@ -223,11 +199,11 @@ while(len(deck) > 0 and len(human_player_hand) > 0
     if(numb_cards_to_draw > 0):
         # Check if the current player is the computer
         if(current_player == PlayerType.computer):
-            computer_player_hand += draw_cards(numb_cards_to_draw)
+            computer_player_hand += draw_cards(deck, numb_cards_to_draw)
         # Check if the current player is the human
         elif(current_player == PlayerType.human):
             # Extract the cards to be drawn by the player.
-            drawn_cards = draw_cards(numb_cards_to_draw)
+            drawn_cards = draw_cards(deck, numb_cards_to_draw)
             if(numb_cards_to_draw > 1):
                 print "You drew cards: ", drawn_cards
             else:

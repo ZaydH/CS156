@@ -922,7 +922,7 @@ def get_winner(human_hand, computer_hand):
         if(min(computer_hand) < min(human_hand)):
             return PlayerType.computer
         else:
-            print PlayerType.human
+            return PlayerType.human
 
 
 def check_and_print_victory_conditions(human_hand, computer_hand):

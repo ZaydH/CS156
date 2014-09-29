@@ -175,6 +175,15 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
         # Print the selected move.
         print "The computer's move was: ", last_move
         print_move_action(last_move)
+        # If the computer's hand has three or less cards, print the number
+        if(len(computer_player_hand) < 3):
+            card_str = " card"
+            # If more than one card print plural.
+            if(len(computer_player_hand) > 1):
+                card_str += "s"
+            # Print the number of cards the computer has.
+            print "The computer has " + str(len(computer_player_hand)) \
+                  + card_str
 
     # Append this move to the play history.
     play_history += [last_move]

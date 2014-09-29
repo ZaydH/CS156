@@ -769,11 +769,23 @@ class CrazyEight:
         @returns: 1 if computer has greater chance to win, -1 otherwise.
 
         >>> CrazyEight.heuristic_eval_function([3,4],[2,5])
-        -0.5
+        -0.25
         >>> CrazyEight.heuristic_eval_function([4],[2,5])
-        0.5
+        0.75
         >>> CrazyEight.heuristic_eval_function([6,3],[2])
-        -1.5
+        -1.25
+        >>> CrazyEight.heuristic_eval_function([11,3],[2])
+        2.25
+        >>> CrazyEight.heuristic_eval_function([24,3],[2])
+        -1.25
+        >>> CrazyEight.heuristic_eval_function([24,1],[2,5])
+        1.25
+        >>> CrazyEight.heuristic_eval_function([24,14],[2,5])
+        0.75
+        >>> CrazyEight.heuristic_eval_function([2,5],[24,14])
+        -0.75
+        >>> CrazyEight.heuristic_eval_function([7,20,33,46],[24,3,14])
+        -0.25
         >>> CrazyEight.heuristic_eval_function([],[5])
         Traceback (most recent call last):
             ...
@@ -803,16 +815,16 @@ class CrazyEight:
             # Correct for good quality cards
             for card in current_hand:
                 # In case of two, could hurt opponent so subtract 1
-                if(card == MoveType.two):
+                if(get_card_rank(card) == MoveType.two):
                     opponent_score -= 1
                 # Queen can hurt the opponent so subtract 3.5
                 elif(card == MoveType.queen_of_spades):
                     opponent_score -= 3.5
                 # Eights are valuable so subtract 0.5
-                elif(card == MoveType.eight):
+                elif(get_card_rank(card) == MoveType.eight):
                     opponent_score -= 0.5
                 # Jacks can hurt opponent so subtract 0.5
-                elif(card == MoveType.jack):
+                elif(get_card_rank(card) == MoveType.jack):
                     opponent_score -= 0.5
 
             # Store the score
@@ -823,9 +835,9 @@ class CrazyEight:
 
         # Give a bonus in case of min card
         if(min(human_hand) > min(computer_hand)):
-            computer_score += 0.5
+            computer_score += 0.25
         else:
-            human_score += 0.5
+            human_score += 0.25
 
         # Utility score depends on who the current player is
         if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max):
@@ -836,9 +848,9 @@ class CrazyEight:
         # Return the heuristic score. It has to be less than the score
         # for a winning board.
         if(score_difference > 0):
-            return min(cards_per_deck-1, score_difference)
+            return min(cards_per_deck-1, round(4*score_difference)/4)
         else:
-            return max(-cards_per_deck+1, score_difference)
+            return max(-cards_per_deck+1, round(4*score_difference)/4)
 
 
 def at_game_end(game_deck, human_player_hand, computer_player_hand):

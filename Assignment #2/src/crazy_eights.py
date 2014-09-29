@@ -370,10 +370,10 @@ class SimplifiedState:
             and comp_minimax == MinimaxPlayer.max)
            or (winning_player == PlayerType.human
                and comp_minimax == MinimaxPlayer.min)):
-            return cards_per_deck
+            return 1.0 * cards_per_deck
         # Return the losing score.
         else:
-            return -1*cards_per_deck
+            return -1.0 * cards_per_deck
 
     def get_heuristic_score(self):
         '''

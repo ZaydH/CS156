@@ -211,9 +211,9 @@ class SimplifiedState:
                 if(display_human_draw):
                     # Extract the cards to be drawn by the player.
                     if(numb_cards_to_draw > 1):
-                        print "You drew cards: ", drawn_cards
+                        print "You drew cards: ", drawn_cards, "\n"
                     else:
-                        print "You drew card: ", drawn_cards
+                        print "You drew card: ", drawn_cards, "\n"
                 # Add the drawn cards to the player's hand
                 human_hand += drawn_cards
                 human_hand.sort()
@@ -341,7 +341,7 @@ class SimplifiedState:
 
         @return: cards_per_deck if the computer won, -52 otherwise.
         '''
-        if(not self.is_end_state()):
+        if(not self._is_game_end()):
             raise RuntimeError("Cannot get winning score if not end state.")
 
         winning_player = get_winner(self._human_hand, self._computer_hand)
@@ -546,6 +546,8 @@ class CrazyEight:
     def h_minimax(simple_state, recursion_depth):
         '''
         '''
+
+        # TODO Perform Alpha/Beta Pruning.
 
         # If cut_off condition has been met, return the score.
         if(simple_state.cutoff_test(recursion_depth)):
@@ -1265,6 +1267,9 @@ def parse_play_history(history):
     :returns: Tuple in the form (number_cards_player0, number_cards_player1,
                                  list_of_discarded_cards)
 
+    >>> parse_play_history([ (0,4,0,0), (1,7,0,0), (0,0,0,1), (1,0,0,0),\
+ (0,20,3,0)])
+    (8, 6, [ 7, 0, 20])
     >>> parse_play_history([(0,0,0,0)])
     (8, 8, [0])
     >>> parse_play_history([(0,1,2,0)])
@@ -1283,7 +1288,7 @@ def parse_play_history(history):
     numb_cards_per_player = [8, 8]
 
     # Process the first move
-    previous_discard = history[0][1]
+    previous_discard = get_discard(history[0])
     discarded_cards = [previous_discard]  # Extracts first card in the history
 
     # Iterate through the remaining moves
@@ -1514,6 +1519,59 @@ def print_move_action(last_move):
             print "You" + card_string
         else:
             print "The computer" + card_string
+
+
+def print_player_hand(player_type, player_hand):
+    '''
+    Improved player hand printer so it is easier to determine the cards
+    in a player's hand.
+
+    @param PlayerType player_type: Type of player either human or computer.
+    @param int[] player_hand: List of cards in a player's hand.
+
+    >>> print_player_hand(PlayerType.human, [0, 13, 20, 25])
+    Your hand is: [ Ace_S, Ace_H, 8_H, King_H ].
+    >>> print_player_hand(PlayerType.human, [26, 14, 41, 42])
+    Your hand is: [ Ace_D, 2_H, 3_C, 4_C ].
+    '''
+
+    # Setup the string depending on who the reference is:
+    if(player_type == PlayerType.human):
+        output_string = "Your hand is: "
+    else:
+        output_string = "The computer's hand is: "
+
+    # Create an array with shortened rank and suit names
+    rank_short = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                  "Jack", "Queen", "King"]
+    suit_short = ["S", "H", "D", "C"]
+
+    # Iterate through the cards to build the array.
+    card_str_list = []
+    for card in player_hand:
+        # Get the card rank and suit
+        card_rank = get_card_rank(card)
+        card_suit = get_card_suit(card)
+        # Build the string of the card
+        temp_str = rank_short[card_rank] + "_" + suit_short[card_suit]
+        # Append to the list of cards
+        card_str_list.append(temp_str)
+
+    # Include the opening bracket.
+    output_string += "["
+    # Add each card to the string.
+    for i in range(0, len(card_str_list)):
+        card_str = card_str_list[i]
+        # Add a preceding comma
+        if(i > 0):
+            output_string += ","
+        # Add the card to the list.
+        output_string += " " + card_str
+
+    # Include the closing bracket.
+    output_string += " ]."
+
+    print output_string
 
 
 def create_move(player, discarded_card, suit, numb_drawn_cards):

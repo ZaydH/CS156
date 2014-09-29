@@ -37,12 +37,10 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
     '''
     :returns: Move - The human player's move.
     '''
-
-    rank_string = card_rank_names[get_card_rank(face_up_card)]
-    suit_string = suit_names[active_suit]
-
+    # Print the initial information.
     print "Its your turn player #" + str(player)
-    print "Your current hand is: ", human_player_hand
+    print "Your hand (using card ID format) is: ", player_hand
+    print_player_hand(player, player_hand)
     previous_move_type = check_for_special_move_type(play_history)
 
     # Check if computer player a queen of spades on last play.
@@ -86,6 +84,8 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
 
 # Build the deck for the game as well as the player's hands.
 game_deck = build_initial_deck()
+# TODO Remove printing of the game deck.
+print "The game deck is: ", game_deck
 human_player_hand, game_deck = draw_cards(game_deck, 8)
 computer_player_hand, game_deck = draw_cards(game_deck, 8)
 
@@ -130,7 +130,7 @@ play_history = [last_move]
 # Print the initial move for improved human readability.
 rank_string = card_rank_names[get_card_rank(face_up_card)]
 suit_string = suit_names[active_suit]
-print "The start of the discard pile is a " + rank_string + " with suit " \
+print "\n\nThe start of the discard pile is a " + rank_string + " with suit " \
       + suit_string + " [" + suit_string + "]."
 
 
@@ -139,7 +139,8 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Display the play history until this point.
     print "\n\nCurrent Play History:"
-    print play_history, "\n\n"
+    print play_history, "\n"
+    print "There are " + str(len(game_deck)) + " cards left in the deck.\n\n"
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
@@ -155,6 +156,8 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
         # Print the turn
         print "Computer's Turn:"
+        # TODO Remove printing of the computer player's hand.
+        print_player_hand(PlayerType.computer, computer_player_hand)
         #  Define the partial state.
         partial_state = (face_up_card, active_suit,
                          computer_player_hand, play_history)
@@ -178,15 +181,19 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
                                                computer_player_hand,
                                                face_up_card, active_suit)
 
+    # TODO Remove printing of the computer player's hand.
+    print_player_hand(PlayerType.human, human_player_hand)
+    print_player_hand(PlayerType.computer, computer_player_hand)
+
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):
         current_player = SimplifiedState.update_next_player(current_player)
     else:
         if(current_player == PlayerType.computer):
-            print "\n\nThe computer player a jack so you lose your turn.\n\n"
+            print "\n\nThe computer player a jack so you lose your turn.\n"
         else:
             print "\n\nThe computer lost its turn because you played a jack.\n" \
-                  + "That's low.\n\n"
+                  + "That's low.\n"
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions(human_player_hand, computer_player_hand)

@@ -19,6 +19,9 @@ card_rank_names = ("Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
 suit_names = ("Spades", "Hearts", "Diamonds", "Clubs")
 cards_per_deck = 52
 
+# FIX_ME Disable debug actions before submitting
+enable_debug_actions = True
+
 
 class MoveType:
     '''
@@ -439,9 +442,10 @@ class CrazyEight:
             # and the un-played (available) card set.
             human_player_hand, shuffled_deck = draw_cards(shuffled_deck,
                                                           numb_human_cards)
-            # Sort the human player hand for improved readability.
-            # TODO remove human player hand sort.
-            human_player_hand.sort()
+
+            if(enable_debug_actions):
+                # Sort the human player hand for improved readability.
+                human_player_hand.sort()
 
             # Build the state Tuple for the computer's move.
             state = (shuffled_deck, human_player_hand, partial_state)
@@ -467,14 +471,14 @@ class CrazyEight:
                 if(proposed_moves[temp_move] > proposed_moves[best_move]):
                     temp_move = best_move
 
-        # TODO Remove move checker before submitting.
-        # Extract previous move type.
-        previous_move_type = check_for_special_move_type(history)
-        # Error check that the proposed move is valid.
-        if(not check_if_move_valid(previous_move_type, best_move,
-                                   PlayerType.computer, computer_hand,
-                                   face_up_card, active_suit)):
-            raise RuntimeError("Best move selected is invalid.")
+        if(enable_debug_actions):
+            # Extract previous move type.
+            previous_move_type = check_for_special_move_type(history)
+            # Error check that the proposed move is valid.
+            if(not check_if_move_valid(previous_move_type, best_move,
+                                       PlayerType.computer, computer_hand,
+                                       face_up_card, active_suit)):
+                raise RuntimeError("Best move selected is invalid.")
 
         # Return the best move.
         return best_move
@@ -515,8 +519,8 @@ class CrazyEight:
                                           face_up_card,
                                           active_suit)
 
-        # TODO Remove possible moves checker.
-        if(len(possible_moves) == 0):
+        # On debug, check a possible action generated
+        if(enable_debug_actions and len(possible_moves) == 0):
             raise RuntimeError("Error generating moves. One move is "
                                + "always possible.")
 
@@ -533,31 +537,34 @@ class CrazyEight:
                                                 active_suit)
 
         # Initialize the best score variable.
-        if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max):
-            best_score = -sys.maxint - 1
-        else:
-            best_score = sys.maxint
+        alpha_max = -sys.maxint - 1
+        beta_min = sys.maxint
 
         # Iterate through the possible moves
-        for next_move in possible_moves:
+        for temp_move in possible_moves:
             # Generate a successor state.
-            temp_state = starting_simple_state.generate_next_state(next_move)
+            temp_state = starting_simple_state.generate_next_state(temp_move)
+
             # Get the score for that state.
-            temp_score = CrazyEight.h_minimax(temp_state, 1)
-            # Check whether this score is better.
-            if((SimplifiedState.computer_minimax_type == MinimaxPlayer.max and
-                temp_score > best_score) or
-                (SimplifiedState.computer_minimax_type == MinimaxPlayer.min and
-                 temp_score < best_score)):
-                # Update best_move and best_score
-                best_score = temp_score
-                best_move = next_move
+            temp_score = CrazyEight.h_minimax(temp_state, 1,
+                                              alpha_max, beta_min)
+
+            # Update alpha_max if the computer is MAX and the score is higher
+            if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max
+               and temp_score > alpha_max):
+                alpha_max = temp_score
+                best_move = temp_move
+            # Update beta if the computer is MIN and the score is lower
+            elif(SimplifiedState.computer_minimax_type == MinimaxPlayer.min
+                 and temp_score < beta_min):
+                beta_min = temp_score
+                best_move = temp_move
 
         # Return the best move
         return best_move
 
     @staticmethod
-    def h_minimax(simple_state, recursion_depth):
+    def h_minimax(simple_state, recursion_depth, alpha_max, beta_min):
         '''
         '''
 
@@ -571,16 +578,21 @@ class CrazyEight:
             # Create a list of possible moves.
             possible_moves = simple_state.generate_all_moves()
 
-            # Determine whether to use max.
-            if((simple_state.get_current_player() == PlayerType.computer
-               and SimplifiedState.computer_minimax_type == MinimaxPlayer.max)
-               or (simple_state.get_current_player() == PlayerType.human and
-               SimplifiedState.computer_minimax_type == MinimaxPlayer.min)):
+            # Get object variables
+            current_player = simple_state.get_current_player()
+            comp_minimax_type = SimplifiedState.computer_minimax_type
+
+            # If current player is computer and computer is MAX, then use MAX
+            if(current_player == PlayerType.computer
+               and comp_minimax_type == MinimaxPlayer.max):
                 use_max = True
-                current_score = -sys.maxint-1
+            # If current player is human and computer is MIN, then human is MAX
+            elif(current_player == PlayerType.human
+                 and comp_minimax_type == MinimaxPlayer.min):
+                use_max = True
+            # All other cases are MIN.
             else:
                 use_max = False
-                current_score = sys.maxint
 
             # Iterate through the possible moves.
             for next_move in possible_moves:
@@ -588,15 +600,34 @@ class CrazyEight:
                 temp_state = simple_state.generate_next_state(next_move)
 
                 # Get the score for that state.
-                temp_score = CrazyEight.h_minimax(temp_state,
-                                                  recursion_depth + 1)
-                # Update current score
-                if((use_max and temp_score > current_score)
-                   or (not use_max and temp_score < current_score)):
-                    current_score = temp_score
+                hueristic_score = CrazyEight.h_minimax(temp_state,
+                                                       recursion_depth + 1,
+                                                       alpha_max,
+                                                       beta_min)
+                # Check the minimum condition.
+                if(not use_max):
+                    # Get new beta min.
+                    beta_min = min(beta_min, hueristic_score)
+                    # If already less than the max, you can prune.
+                    if(beta_min <= alpha_max):
+                        print "Alpha pruned"
+                        return beta_min
 
-        # Return the score.
-        return current_score
+                # Check the maximum condition.
+                elif(use_max):
+                    # Get new alpha max.
+                    alpha_max = max(alpha_max, hueristic_score)
+                    # If already greater than the prune, you can prune.
+                    if(beta_min <= alpha_max):
+                        print "Beta pruned"
+                        return alpha_max
+
+        # Return the score for max
+        if(use_max):
+            return alpha_max
+        # Return the score for min.
+        elif(not use_max):
+            return beta_min
 
     @staticmethod
     def generate_all_moves(player, previous_move_type, player_hand,

@@ -156,8 +156,11 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
         # Print the turn
         print "Computer's Turn:"
-        # TODO Remove printing of the computer player's hand.
-        print_player_hand(PlayerType.computer, computer_player_hand)
+
+        if(enable_debug_actions):
+            # During debug, print the computer player's hand for tracking.
+            print_player_hand(PlayerType.computer, computer_player_hand)
+
         #  Define the partial state.
         partial_state = (face_up_card, active_suit,
                          computer_player_hand, play_history)

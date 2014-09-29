@@ -20,7 +20,7 @@ suit_names = ("Spades", "Hearts", "Diamonds", "Clubs")
 cards_per_deck = 52
 
 # FIX_ME Disable debug actions before submitting
-enable_debug_actions = True
+enable_debug_actions = False
 
 
 class MoveType:
@@ -341,7 +341,7 @@ class SimplifiedState:
             depth has been exceeded.
         '''
         return (self._is_game_end()
-                or recursion_depth == CrazyEight._maximum_depth)
+                or recursion_depth == CrazyEight.current_maximum_depth)
 
     def _is_game_end(self):
         '''
@@ -395,7 +395,10 @@ class CrazyEight:
 
     Contains two public methods.  They are move and move_perfect_knowledge.
     '''
-    _maximum_depth = 5
+    # FIX_ME Ensure a good maximum recursion depth.
+    _absolute_maximum_depth = 15
+    current_maximum_depth = -1
+    _numb_imperfect_knowledge_trials = 100
 
     @staticmethod
     def move(partial_state):
@@ -434,7 +437,8 @@ class CrazyEight:
         # as well as the number of times it was selected.  The more times it
         # was selected, the better the solution.
         proposed_moves = {}
-        for i in range(0, 10):
+        numb_trials = CrazyEight._numb_imperfect_knowledge_trials
+        for i in range(0, numb_trials):
 
             # Shuffle the available deck.
             shuffled_deck = shuffle_deck(list(available_cards))
@@ -528,6 +532,14 @@ class CrazyEight:
         if(len(possible_moves) == 1):
             return possible_moves[0]
 
+        # Calculated maximum depth based off what is most practical
+        # to the situation
+        proposed_max_depth = max(len(deck)/5, 10 - len(possible_moves),
+                                 (10 - len(deck)) * 2)
+        absolute_max_depth = CrazyEight._absolute_maximum_depth
+        CrazyEight.current_maximum_depth = min(proposed_max_depth,
+                                               absolute_max_depth)
+
         # Create a SimplifiedState object to use in minimax.
         starting_simple_state = SimplifiedState(previous_move_type,
                                                 deck, PlayerType.computer,
@@ -546,7 +558,7 @@ class CrazyEight:
             temp_state = starting_simple_state.generate_next_state(temp_move)
 
             # Get the score for that state.
-            temp_score = CrazyEight.h_minimax(temp_state, 1,
+            temp_score = CrazyEight.h_minimax(temp_state, 0,
                                               alpha_max, beta_min)
 
             # Update alpha_max if the computer is MAX and the score is higher
@@ -567,8 +579,6 @@ class CrazyEight:
     def h_minimax(simple_state, recursion_depth, alpha_max, beta_min):
         '''
         '''
-
-        # TODO Perform Alpha/Beta Pruning.
 
         # If cut_off condition has been met, return the score.
         if(simple_state.cutoff_test(recursion_depth)):
@@ -610,7 +620,7 @@ class CrazyEight:
                     beta_min = min(beta_min, hueristic_score)
                     # If already less than the max, you can prune.
                     if(beta_min <= alpha_max):
-                        print "Alpha pruned"
+                        # print "Alpha pruned"
                         return beta_min
 
                 # Check the maximum condition.
@@ -619,7 +629,7 @@ class CrazyEight:
                     alpha_max = max(alpha_max, hueristic_score)
                     # If already greater than the prune, you can prune.
                     if(beta_min <= alpha_max):
-                        print "Beta pruned"
+                        # print "Beta pruned"
                         return alpha_max
 
         # Return the score for max

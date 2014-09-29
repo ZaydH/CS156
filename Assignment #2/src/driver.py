@@ -84,8 +84,11 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
 
 # Build the deck for the game as well as the player's hands.
 game_deck = build_initial_deck()
-# TODO Remove printing of the game deck.
-print "The game deck is: ", game_deck
+
+if(enable_debug_actions):
+    # For debug purposes, display the starting game_deck.
+    print "The game deck is: ", game_deck
+
 human_player_hand, game_deck = draw_cards(game_deck, 8)
 computer_player_hand, game_deck = draw_cards(game_deck, 8)
 
@@ -104,7 +107,7 @@ while(entered_string != "1" and entered_string != "2"):
 
     # If not the first time through the loop print an error message.
     if(not first_time_in_loop):
-        print"\nInvalid entry.\n"
+        print"Invalid entry.\n"
     first_time_in_loop = False
 
     #  Get the user input.
@@ -138,9 +141,12 @@ print "\n\nThe start of the discard pile is a " + rank_string + " with suit " \
 while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # Display the play history until this point.
-    print "\n\nCurrent Play History:"
-    print play_history, "\n"
-    print "There are " + str(len(game_deck)) + " cards left in the deck.\n\n"
+    print "\nCurrent Play History:"
+    print play_history
+    # Under certain circumstances print the number of cars in the game deck.
+    if(enable_debug_actions or len(game_deck) <= 5):
+        print "There are " + str(len(game_deck)) + " cards left in the deck."
+    print "\n"
 
     # Handle the player's turn
     if(current_player == PlayerType.human):
@@ -184,9 +190,10 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
                                                computer_player_hand,
                                                face_up_card, active_suit)
 
-    # TODO Remove printing of the computer player's hand.
-    print_player_hand(PlayerType.human, human_player_hand)
-    print_player_hand(PlayerType.computer, computer_player_hand)
+    if(enable_debug_actions):
+        # For debug show the player hands.
+        print_player_hand(PlayerType.human, human_player_hand)
+        print_player_hand(PlayerType.computer, computer_player_hand)
 
     # Switch to the next player only if last card played was not a jack.
     if(check_for_special_move_type(play_history) != MoveType.jack):
@@ -195,8 +202,7 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
         if(current_player == PlayerType.computer):
             print "\n\nThe computer player a jack so you lose your turn.\n"
         else:
-            print "\n\nThe computer lost its turn because you played a jack.\n" \
-                  + "That's low.\n"
+            print "\n\nThe computer lost its turn because you played a jack.\n"
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions(human_player_hand, computer_player_hand)

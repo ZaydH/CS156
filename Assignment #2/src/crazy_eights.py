@@ -578,6 +578,16 @@ class CrazyEight:
     @staticmethod
     def h_minimax(simple_state, recursion_depth, alpha_max, beta_min):
         '''
+        Heuristic Minimax Algorithm using AlphaBeta Pruning.
+
+        Recursively determines the minimax cost recursively.
+
+        @param SimplifiedState simplestate: Simplified state object.
+        @param int recursion_depth: Current recursion depth.
+        @param float alpha_max: Alpha pruning variable
+        @param float beta_min: Beta pruning variable.
+
+        @return float: Score for the move.
         '''
 
         # If cut_off condition has been met, return the score.

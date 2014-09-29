@@ -134,7 +134,7 @@ play_history = [last_move]
 rank_string = card_rank_names[get_card_rank(face_up_card)]
 suit_string = suit_names[active_suit]
 print "\n\nThe start of the discard pile is a " + rank_string + " with suit " \
-      + suit_string + " [" + suit_string + "]."
+      + suit_string + " [" + str(active_suit) + "]."
 
 
 #  Continue playing the game until the deck is empty.

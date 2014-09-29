@@ -192,7 +192,8 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
 
     # If the computer's hand has three or less cards, print the number
     if(current_player == PlayerType.computer
-       and len(computer_player_hand) <= 3):
+       and len(computer_player_hand) <= 3
+       and len(computer_player_hand) > 0):
         card_str = " card"
         # If more than one card print plural.
         if(len(computer_player_hand) > 1):

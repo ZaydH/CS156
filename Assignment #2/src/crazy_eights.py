@@ -163,12 +163,18 @@ class SimplifiedState:
 
         @return face_up_card, active_suit: Next face_up_card and active_suit
 
-        >>> SimplifiedState.process_discarded_card((1,0,0,0), [4,25,50,43,10],\
+        >>> SimplifiedState.process_discarded_card((1,0,0,0), [25,50,43,10],\
  [0,9,17,24,32,38,48], 13, 1)
         (0, 0)
-        >>> SimplifiedState.process_discarded_card((1,0,0,1), [4,25,50,43,10],\
+        >>> SimplifiedState.process_discarded_card((1,0,0,1), [25,50,43,10],\
  [0,9,17,24,32,38,48], 13, 1)
         (13, 1)
+        >>> SimplifiedState.process_discarded_card((0,26,2,0), [25,50,26,10],\
+ [0,9,17,24,32,38,48], 13, 1)
+        (26, 2)
+        >>> SimplifiedState.process_discarded_card((1,40,0,0), [25,50,43,10],\
+ [0,9,17,24,32,40,48], 13, 1)
+        (40, 0)
         """
 
         discarded_card = get_discard(last_move)

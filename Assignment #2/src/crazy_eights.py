@@ -162,11 +162,19 @@ class SimplifiedState:
         @param computer_hand: List of int's containing cards in computer's hand
 
         @return face_up_card, active_suit: Next face_up_card and active_suit
+
+        >>> SimplifiedState.process_discarded_card((1,0,0,0), [4,25,50,43,10],\
+ [0,9,17,24,32,38,48], 13, 1)
+        (0, 0)
+        >>> SimplifiedState.process_discarded_card((1,0,0,1), [4,25,50,43,10],\
+ [0,9,17,24,32,38,48], 13, 1)
+        (13, 1)
         """
 
         discarded_card = get_discard(last_move)
         numb_cards_to_draw = get_number_of_cards_to_draw(last_move)
-        if(discarded_card != 0 and numb_cards_to_draw == 0):
+        # if you did not draw, you discarded.
+        if(numb_cards_to_draw == 0):
             # Store the discarded card and get its suit
             face_up_card = discarded_card
             active_suit = get_suit(last_move)
@@ -1269,7 +1277,7 @@ def parse_play_history(history):
 
     >>> parse_play_history([ (0,4,0,0), (1,7,0,0), (0,0,0,1), (1,0,0,0),\
  (0,20,3,0)])
-    (8, 6, [ 7, 0, 20])
+    (8, 6, [4, 7, 0, 20])
     >>> parse_play_history([(0,0,0,0)])
     (8, 8, [0])
     >>> parse_play_history([(0,1,2,0)])

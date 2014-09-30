@@ -545,9 +545,9 @@ class CrazyEight:
         if(len(deck) > 25):
             proposed_max_depth = max(len(deck)/5, 10 - len(possible_moves))
         elif(len(deck) > 12):
-            proposed_max_depth = max(len(deck)/3, 12 - len(possible_moves))
+            proposed_max_depth = max(len(deck)/3, 11 - len(possible_moves))
         else:
-            proposed_max_depth = max(len(deck)/1.2, 14 - len(possible_moves),
+            proposed_max_depth = max(len(deck)/1.2, 13 - len(possible_moves),
                                      (10 - len(deck)) * 2)
 
         absolute_max_depth = CrazyEight._absolute_maximum_depth

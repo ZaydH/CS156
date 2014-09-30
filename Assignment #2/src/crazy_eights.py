@@ -356,24 +356,32 @@ class SimplifiedState:
         '''
         Gets the winning score for this state.
 
-        @return: cards_per_deck if the computer won, -52 otherwise.
+        Performance improvement if reused same heuristic function
+        as when the game did not terminate.  This enables a "better"
+        winning solution to be preferred over a worse winning solution.
+
+        @return: 1.3 * CrazyEight.heuristic_eval_function(self._human_hand,
+                                                          self._computer_hand
+
         '''
         if(not self._is_game_end()):
             raise RuntimeError("Cannot get winning score if not end state.")
 
-        winning_player = get_winner(self._human_hand, self._computer_hand)
-        comp_minimax = SimplifiedState.computer_minimax_type
-
-        # If the current player is the winning player, return max score.
-        # otherwise return the minimum score.
-        if((winning_player == PlayerType.computer
-            and comp_minimax == MinimaxPlayer.max)
-           or (winning_player == PlayerType.human
-               and comp_minimax == MinimaxPlayer.min)):
-            return 1.0 * cards_per_deck
-        # Return the losing score.
-        else:
-            return -1.0 * cards_per_deck
+#         winning_player = get_winner(self._human_hand, self._computer_hand)
+#         comp_minimax = SimplifiedState.computer_minimax_type
+#
+#         # If the current player is the winning player, return max score.
+#         # otherwise return the minimum score.
+#         if((winning_player == PlayerType.computer
+#             and comp_minimax == MinimaxPlayer.max)
+#            or (winning_player == PlayerType.human
+#                and comp_minimax == MinimaxPlayer.min)):
+#             return 1.0 * cards_per_deck
+#         # Return the losing score.
+#         else:
+#             return -1.0 * cards_per_deck
+        return 1.3 * CrazyEight.heuristic_eval_function(self._human_hand,
+                                                        self._computer_hand)
 
     def get_heuristic_score(self):
         '''
@@ -534,11 +542,16 @@ class CrazyEight:
 
         # Calculated maximum depth based off what is most practical
         # to the situation
-        proposed_max_depth = max(len(deck)/5, 10 - len(possible_moves),
-                                 (10 - len(deck)) * 2)
+        if(len(deck) > 25):
+            proposed_max_depth = max(len(deck)/5, 11 - len(possible_moves))
+        else:
+            proposed_max_depth = max(len(deck)/3, 14 - len(possible_moves),
+                                     (10 - len(deck)) * 2)
+
         absolute_max_depth = CrazyEight._absolute_maximum_depth
         CrazyEight.current_maximum_depth = min(proposed_max_depth,
                                                absolute_max_depth)
+#        CrazyEight.current_maximum_depth = 4
 
         # Create a SimplifiedState object to use in minimax.
         starting_simple_state = SimplifiedState(previous_move_type,
@@ -796,19 +809,11 @@ class CrazyEight:
         -0.75
         >>> CrazyEight.heuristic_eval_function([7,20,33,46],[24,3,14])
         -0.25
-        >>> CrazyEight.heuristic_eval_function([],[5])
-        Traceback (most recent call last):
-            ...
-        ValueError: The human and computer hands must have at least 1 card
-        >>> CrazyEight.heuristic_eval_function([5],[])
-        Traceback (most recent call last):
-            ...
-        ValueError: The human and computer hands must have at least 1 card
         '''
 
-        if(len(human_hand) == 0 or len(computer_hand) == 0):
-            raise ValueError("The human and computer hands must have "
-                             + "at least 1 card")
+#         if(len(human_hand) == 0 or len(computer_hand) == 0):
+#             raise ValueError("The human and computer hands must have "
+#                              + "at least 1 card")
 
         #  Determine a predicted score for each of the players
         for i in range(0, 2):
@@ -844,10 +849,11 @@ class CrazyEight:
                 human_score = opponent_score
 
         # Give a bonus in case of min card
-        if(min(human_hand) > min(computer_hand)):
-            computer_score += 0.25
-        else:
-            human_score += 0.25
+        if(len(human_hand) > 0 and len(computer_hand) > 0):
+            if(min(human_hand) > min(computer_hand)):
+                computer_score += 0.25
+            else:
+                human_score += 0.25
 
         # Utility score depends on who the current player is
         if(SimplifiedState.computer_minimax_type == MinimaxPlayer.max):

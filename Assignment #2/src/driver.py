@@ -33,7 +33,8 @@ def build_initial_deck():
     return temp_deck
 
 
-def perform_human_player_move(player, player_hand, face_up_card, active_suit):
+def perform_human_player_move(player, play_history, player_hand,
+                              face_up_card, active_suit):
     '''
     :returns: Move - The human player's move.
     '''
@@ -45,7 +46,10 @@ def perform_human_player_move(player, player_hand, face_up_card, active_suit):
 
     # Check if computer player a queen of spades on last play.
     if(previous_move_type == MoveType.queen_of_spades):
-        print "Your opponent played a queen of spades."
+        if(len(play_history) > 1):
+            print "Your opponent played a queen of spades."
+        else:
+            print "The initial discard was a queen of spades."
         print "You are forced to draw five cards."
         human_player_move = get_special_move(MoveType.queen_of_spades,
                                              PlayerType.human)
@@ -117,7 +121,7 @@ while(entered_string != "1" and entered_string != "2"):
 
 # Extract from what the user entered as play order
 # the player marked in the initial move.
-current_player = (int(entered_string) + 1) % 2
+current_player = int(entered_string) % 2
 
 # Initialize the play history by taking one card off the deck.
 drawn_cards, game_deck = draw_cards(game_deck, 1)  # Draw first discard.
@@ -125,7 +129,7 @@ face_up_card = drawn_cards[0]
 # Only for first play is the active suit guaranteed to be face card suit
 active_suit = get_card_suit(face_up_card)
 # Store the last move in case special circumstances must be handled
-last_move = create_move((current_player+1) % 2, face_up_card,
+last_move = create_move(current_player, face_up_card,
                         get_card_suit(face_up_card), 0)
 
 # Add initial move to the history
@@ -148,11 +152,32 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
         print "There are " + str(len(game_deck)) + " cards left in the deck."
     print "\n"
 
+    # Switch to the next player only if last card played was not a jack.
+    if(check_for_special_move_type(play_history) != MoveType.jack):
+        current_player = SimplifiedState.update_next_player(current_player)
+    else:
+        # With a jack, print an appropriate message so the user
+        # is explicitly told what happened.
+        if(current_player == PlayerType.computer):
+            if(len(play_history) > 1):
+                print "\n\nThe computer player a jack so you lose your turn.\n"
+            else:
+                print "The initial top of the deck is a jack so you "\
+                      + "lose your turn.\n"
+        elif(current_player == PlayerType.human):
+            if(len(play_history) > 1):
+                print "\n\nThe computer lost its turn because you played"\
+                      + " a jack.\n"
+            else:
+                print "The initial top of the deck is a jack so the computer "\
+                      + "lost its turn.\n"
+
     # Handle the player's turn
     if(current_player == PlayerType.human):
 
         # Perform the human player's turn.
         last_move = perform_human_player_move(PlayerType.human,
+                                              play_history,
                                               human_player_hand,
                                               face_up_card,
                                               active_suit)
@@ -206,15 +231,6 @@ while(not at_game_end(game_deck, human_player_hand, computer_player_hand)):
         # For debug show the player hands.
         print_player_hand(PlayerType.human, human_player_hand)
         print_player_hand(PlayerType.computer, computer_player_hand)
-
-    # Switch to the next player only if last card played was not a jack.
-    if(check_for_special_move_type(play_history) != MoveType.jack):
-        current_player = SimplifiedState.update_next_player(current_player)
-    else:
-        if(current_player == PlayerType.computer):
-            print "\n\nThe computer player a jack so you lose your turn.\n"
-        else:
-            print "\n\nThe computer lost its turn because you played a jack.\n"
 
 # Once the deck is empty, check and print who won.
 check_and_print_victory_conditions(human_player_hand, computer_player_hand)

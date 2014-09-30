@@ -1017,6 +1017,13 @@ def check_for_special_move_type(history):
 
     :returns: An object of type "MoveType"
 
+    >>> check_for_special_move_type([(0, 1, 0, 0), (0, 14, 1, 0)])
+    4
+    >>> check_for_special_move_type([(0,1,0,0),(0,14,1,0),(0,27,2,0)])
+    6
+    >>> check_for_special_move_type([(0,40,3,0),(0,1,0,0),(0,14,1,0),\
+(0,27,2,0)])
+    8
     >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 1, 0, 0), \
 (1, 27, 0, 0),(0, 40, 0, 0)])
     8
@@ -1027,6 +1034,24 @@ def check_for_special_move_type(history):
     2
     >>> check_for_special_move_type([(0, 4, 0, 0)])
     -1
+    >>> check_for_special_move_type([(0, 1, 0, 0)])
+    2
+    >>> check_for_special_move_type([(0, 14, 1, 0)])
+    2
+    >>> check_for_special_move_type([(0, 27, 0, 0)])
+    2
+    >>> check_for_special_move_type([(0, 40, 0, 0)])
+    2
+    >>> check_for_special_move_type([(0, 11, 0, 0)])
+    11
+    >>> check_for_special_move_type([(0, 10, 0, 0)])
+    10
+    >>> check_for_special_move_type([(0, 23, 0, 0)])
+    10
+    >>> check_for_special_move_type([(0, 36, 0, 0)])
+    10
+    >>> check_for_special_move_type([(0, 49, 0, 0)])
+    10
     >>> check_for_special_move_type([(0, 4, 0, 0),(1, 1, 0, 0),(0, 0, 0, 2)])
     -1
     >>> check_for_special_move_type([(0, 4, 0, 0),(1, 14, 0, 0),(0, 1, 0, 0)])
@@ -1040,9 +1065,9 @@ def check_for_special_move_type(history):
     >>> check_for_special_move_type([(0, 4, 0, 0),(0, 11, 0, 0),(1, 36, 0, 0)])
     10
     '''
-    # On the first move, regardless of face card, always a normal move.
-    if(len(history) == 1):
-        return MoveType.normal_move
+#     # On the first move, regardless of face card, always a normal move.
+#     if(len(history) == 1):
+#         return MoveType.normal_move
 
     #  Get the last move.
     last_move = history[len(history) - 1]
@@ -1073,7 +1098,7 @@ def check_for_special_move_type(history):
         # Iterate checking twos court
         while(twos_count < 4
               and get_card_rank(last_discard) == MoveType.two
-              and numb_history_elements >= twos_count + 2):
+              and numb_history_elements >= twos_count + 1):
 
             # Get previous discard count.
             last_discard = get_discard(history[len(history) - twos_count - 1])

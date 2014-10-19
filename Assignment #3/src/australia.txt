@@ -13,3 +13,4 @@ NSW ne Q
 SA ne NSW
 NSW lt 3
 V lt 3
+SA ne V

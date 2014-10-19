@@ -10,12 +10,23 @@ import bisect
 
 
 def handle_no_solution():
+    '''
+    Generic Handler of an invalid input and when there is no solution.
+
+    Prints "NO SOLUTION" and cleanly exits the program.
+    '''
     print "NO SOLUTION"
     sys.exit(0)
 
 
 class CSPConstraint:
+    '''
+    CSP Constraint Class:
 
+    Constraint class for binary and unary constraints.
+    '''
+
+    # Complete set of supported variable relations.
     _variable_relation = ["eq", "ne", "lt", "gt"]
 
     @staticmethod
@@ -160,6 +171,7 @@ class CSPConstraint:
 
         raise RuntimeError("Invalid operator specified for constraint check")
 
+
 # ------------------ CSP Variable Class ---------------------- #
 
 
@@ -291,6 +303,18 @@ class CSPVariable:
             self._unary_constraints.append(constraint)
 
     def _check_assignment_consistent(self, assignment, value):
+        '''
+        Assignment Consistency Checker
+
+        For the implicit variable, this method checks that assigning the
+        specified value to this variable is consistent with the specified
+        parameter.  If it is consistent, it makes the assignment.
+
+        :param dict assignment: Dictionary of variable assignments.
+        :param int value: Value to be assigned to the variable.
+
+        :returns: bool True if assignment is valid. False Otherwise.
+        '''
         # Assume consistency and verified in the function.
         assignment_consistent = True
 
@@ -334,10 +358,18 @@ class CSPVariable:
         '''
         return len(self._domain)
 
-    def get_variable_degree(self, assignment):
+    def get_degree(self, assignment):
         '''
+        Variable Degree Accessor
+
+        Determines the out degree of the implicit variable
+        based off the current assignment.
+
+        :param dict assignment: CSP Assignment as a dictionary
+
+        :returns: int Degree of this variable.
         '''
-        out_degree = 0  # Set default outdegree of this variable.
+        out_degree = 0  # Set default out degree of this variable.
 
         # Iterate through all binary constraints to
         # determine the variable's degree
@@ -346,7 +378,7 @@ class CSPVariable:
             variables = constraint.get_variables()
 
             # Extract name of the other variable.
-            if(variables[0] == self.name()):
+            if(variables[0] == self.name):
                 other_variable_name = variables[1]
             else:
                 other_variable_name = variables[0]
@@ -387,7 +419,17 @@ class CSP:
     the pseudocode in the textbook.
     '''
     def __init__(self, filename, forward_checking_flag):
+        '''
+        CSP Constructor
 
+        :param str filename: Name of the file containing the CSP information
+        :param int forward_checking_flag: 1 if forward checking is enabled
+                                          0 if it is disabled.
+
+        Builds the constraint satisifaction definition. It reads from the
+        specified file and then builds the list of variables, builds the
+        variable domains, and creates an empty CSP assignment.
+        '''
         self._variables = {}
         self._binary_constraints = []
         self._assignment = {}
@@ -426,6 +468,12 @@ class CSP:
             temp_var.build_initial_domain()
 
     def execute_backtrack_search(self):
+        '''
+        Backtrack Search Main Call
+
+        Result: Prints "NO SOLUTION" if no solution is found.
+        Otherwise, it prints the solution.
+        '''
         # Start with an empty assignment
         self._assignment = {}
         solution = CSP._backtrack(self)
@@ -531,22 +579,34 @@ class CSP:
         '''
         CSP Variable Selection Algorithm
 
-        Implements the Minimum Remaining Variable (MRV) algorithm.
+        Implements the Minimum Remaining Variable (MRV) algorithm.  In the case
+        where two variables have the same MRV score, it then uses the degree
+        heuristic to break the tie as described on pages 216 and 217 of the
+        textbook.
 
         :returns: CSPVariable - Variable with the smallest remaining domain.
         '''
         # Initialize the variables for the initial setting.
         fail_first_variable = None
         minimum_domain_size = sys.maxint
+        best_var_degree = -1
         # Find the variable with the smallest domain
         for var_name in self._variables:
             var = self._variables[var_name]
             # Variable must not already be unassigned
             # And the domain size must be smaller than current min
-            if(var.is_unassigned()
-               and var.get_domain_size() < minimum_domain_size):
-                fail_first_variable = var
-                minimum_domain_size = var.get_domain_size
+            if(var.is_unassigned()):
+                var_out_degree = var.get_degree(self._assignment)
+                var_domain_size = var.get_domain_size()
+                # Check if one domain is smaller than the other first.
+                # If the domains are the same size, then use the degree
+                # heuristic to break the tie.
+                if (var_domain_size < minimum_domain_size
+                    or (var_domain_size == minimum_domain_size
+                        and var_out_degree > best_var_degree)):
+                    fail_first_variable = var
+                    minimum_domain_size = var_domain_size
+                    best_var_degree = var_out_degree
 
         # Verify a valid variable was selected.
         if(fail_first_variable is None):

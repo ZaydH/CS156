@@ -37,7 +37,7 @@ A2 ne H2
 A2 ne I2
 A2 ne B3
 A2 ne C3
-A2 eq 8
+A2 eq 2
 A3 lt 9
 A3 ne A4
 A3 ne A5
@@ -53,6 +53,7 @@ A3 ne F3
 A3 ne G3
 A3 ne H3
 A3 ne I3
+A3 eq 8
 A4 lt 9
 A4 ne A5
 A4 ne A6
@@ -86,7 +87,6 @@ A5 ne H5
 A5 ne I5
 A5 ne B6
 A5 ne C6
-A5 eq 0
 A6 lt 9
 A6 ne A7
 A6 ne A8
@@ -114,7 +114,6 @@ A7 ne B8
 A7 ne B9
 A7 ne C8
 A7 ne C9
-A7 eq 2
 A8 lt 9
 A8 ne A9
 A8 ne B8
@@ -136,6 +135,7 @@ A9 ne F9
 A9 ne G9
 A9 ne H9
 A9 ne I9
+A9 eq 5
 B1 lt 9
 B1 ne B2
 B1 ne B3
@@ -170,7 +170,6 @@ B2 ne G2
 B2 ne H2
 B2 ne I2
 B2 ne C3
-B2 eq 2
 B3 lt 9
 B3 ne B4
 B3 ne B5
@@ -200,7 +199,6 @@ B4 ne H4
 B4 ne I4
 B4 ne C5
 B4 ne C6
-B4 eq 7
 B5 lt 9
 B5 ne B6
 B5 ne B7
@@ -214,6 +212,7 @@ B5 ne G5
 B5 ne H5
 B5 ne I5
 B5 ne C6
+B5 eq 6
 B6 lt 9
 B6 ne B7
 B6 ne B8
@@ -237,7 +236,6 @@ B7 ne H7
 B7 ne I7
 B7 ne C8
 B7 ne C9
-B7 eq 5
 B8 lt 9
 B8 ne B9
 B8 ne C8
@@ -256,7 +254,6 @@ B9 ne F9
 B9 ne G9
 B9 ne H9
 B9 ne I9
-B9 eq 3
 C1 lt 9
 C1 ne C2
 C1 ne C3
@@ -299,6 +296,7 @@ C3 ne F3
 C3 ne G3
 C3 ne H3
 C3 ne I3
+C3 eq 0
 C4 lt 9
 C4 ne C5
 C4 ne C6
@@ -311,6 +309,7 @@ C4 ne F4
 C4 ne G4
 C4 ne H4
 C4 ne I4
+C4 eq 4
 C5 lt 9
 C5 ne C6
 C5 ne C7
@@ -350,6 +349,7 @@ C8 ne F8
 C8 ne G8
 C8 ne H8
 C8 ne I8
+C8 eq 6
 C9 lt 9
 C9 ne D9
 C9 ne E9
@@ -357,7 +357,6 @@ C9 ne F9
 C9 ne G9
 C9 ne H9
 C9 ne I9
-C9 eq 4
 D1 lt 9
 D1 ne D2
 D1 ne D3
@@ -403,7 +402,7 @@ D3 ne F3
 D3 ne G3
 D3 ne H3
 D3 ne I3
-D3 eq 8
+D3 eq 2
 D4 lt 9
 D4 ne D5
 D4 ne D6
@@ -440,6 +439,7 @@ D6 ne F6
 D6 ne G6
 D6 ne H6
 D6 ne I6
+D6 eq 6
 D7 lt 9
 D7 ne D8
 D7 ne D9
@@ -452,6 +452,7 @@ D7 ne E8
 D7 ne E9
 D7 ne F8
 D7 ne F9
+D7 eq 0
 D8 lt 9
 D8 ne D9
 D8 ne E8
@@ -461,13 +462,13 @@ D8 ne H8
 D8 ne I8
 D8 ne E9
 D8 ne F9
+D8 eq 5
 D9 lt 9
 D9 ne E9
 D9 ne F9
 D9 ne G9
 D9 ne H9
 D9 ne I9
-D9 eq 5
 E1 lt 9
 E1 ne E2
 E1 ne E3
@@ -483,7 +484,6 @@ E1 ne H1
 E1 ne I1
 E1 ne F2
 E1 ne F3
-E1 eq 2
 E2 lt 9
 E2 ne E3
 E2 ne E4
@@ -521,7 +521,7 @@ E4 ne H4
 E4 ne I4
 E4 ne F5
 E4 ne F6
-E4 eq 5
+E4 eq 2
 E5 lt 9
 E5 ne E6
 E5 ne E7
@@ -532,7 +532,7 @@ E5 ne G5
 E5 ne H5
 E5 ne I5
 E5 ne F6
-E5 eq 1
+E5 eq 4
 E6 lt 9
 E6 ne E7
 E6 ne E8
@@ -541,7 +541,7 @@ E6 ne F6
 E6 ne G6
 E6 ne H6
 E6 ne I6
-E6 eq 0
+E6 eq 5
 E7 lt 9
 E7 ne E8
 E7 ne E9
@@ -551,7 +551,7 @@ E7 ne H7
 E7 ne I7
 E7 ne F8
 E7 ne F9
-E7 eq 8
+E7 eq 1
 E8 lt 9
 E8 ne E9
 E8 ne F8
@@ -564,7 +564,6 @@ E9 ne F9
 E9 ne G9
 E9 ne H9
 E9 ne I9
-E9 eq 6
 F1 lt 9
 F1 ne F2
 F1 ne F3
@@ -577,7 +576,6 @@ F1 ne F9
 F1 ne G1
 F1 ne H1
 F1 ne I1
-F1 eq 1
 F2 lt 9
 F2 ne F3
 F2 ne F4
@@ -589,6 +587,7 @@ F2 ne F9
 F2 ne G2
 F2 ne H2
 F2 ne I2
+F2 eq 5
 F3 lt 9
 F3 ne F4
 F3 ne F5
@@ -599,6 +598,7 @@ F3 ne F9
 F3 ne G3
 F3 ne H3
 F3 ne I3
+F3 eq 4
 F4 lt 9
 F4 ne F5
 F4 ne F6
@@ -608,6 +608,7 @@ F4 ne F9
 F4 ne G4
 F4 ne H4
 F4 ne I4
+F4 eq 3
 F5 lt 9
 F5 ne F6
 F5 ne F7
@@ -629,7 +630,7 @@ F7 ne F9
 F7 ne G7
 F7 ne H7
 F7 ne I7
-F7 eq 0
+F7 eq 2
 F8 lt 9
 F8 ne F9
 F8 ne G8
@@ -654,7 +655,6 @@ G1 ne H2
 G1 ne H3
 G1 ne I2
 G1 ne I3
-G1 eq 6
 G2 lt 9
 G2 ne G3
 G2 ne G4
@@ -667,6 +667,7 @@ G2 ne H2
 G2 ne I2
 G2 ne H3
 G2 ne I3
+G2 eq 8
 G3 lt 9
 G3 ne G4
 G3 ne G5
@@ -688,7 +689,7 @@ G4 ne H5
 G4 ne H6
 G4 ne I5
 G4 ne I6
-G4 eq 1
+G4 eq 6
 G5 lt 9
 G5 ne G6
 G5 ne G7
@@ -704,6 +705,7 @@ G6 ne G8
 G6 ne G9
 G6 ne H6
 G6 ne I6
+G6 eq 7
 G7 lt 9
 G7 ne G8
 G7 ne G9
@@ -713,6 +715,7 @@ G7 ne H8
 G7 ne H9
 G7 ne I8
 G7 ne I9
+G7 eq 5
 G8 lt 9
 G8 ne G9
 G8 ne H8
@@ -734,7 +737,6 @@ H1 ne H9
 H1 ne I1
 H1 ne I2
 H1 ne I3
-H1 eq 4
 H2 lt 9
 H2 ne H3
 H2 ne H4
@@ -753,7 +755,6 @@ H3 ne H7
 H3 ne H8
 H3 ne H9
 H3 ne I3
-H3 eq 3
 H4 lt 9
 H4 ne H5
 H4 ne H6
@@ -770,12 +771,12 @@ H5 ne H8
 H5 ne H9
 H5 ne I5
 H5 ne I6
+H5 eq 3
 H6 lt 9
 H6 ne H7
 H6 ne H8
 H6 ne H9
 H6 ne I6
-H6 eq 2
 H7 lt 9
 H7 ne H8
 H7 ne H9
@@ -786,7 +787,6 @@ H8 lt 9
 H8 ne H9
 H8 ne I8
 H8 ne I9
-H8 eq 5
 H9 lt 9
 H9 ne I9
 I1 lt 9
@@ -798,6 +798,7 @@ I1 ne I6
 I1 ne I7
 I1 ne I8
 I1 ne I9
+I1 eq 1
 I2 lt 9
 I2 ne I3
 I2 ne I4
@@ -813,7 +814,6 @@ I3 ne I6
 I3 ne I7
 I3 ne I8
 I3 ne I9
-I3 eq 2
 I4 lt 9
 I4 ne I5
 I4 ne I6
@@ -825,7 +825,6 @@ I5 ne I6
 I5 ne I7
 I5 ne I8
 I5 ne I9
-I5 eq 5
 I6 lt 9
 I6 ne I7
 I6 ne I8
@@ -833,7 +832,8 @@ I6 ne I9
 I7 lt 9
 I7 ne I8
 I7 ne I9
+I7 eq 8
 I8 lt 9
 I8 ne I9
-I8 eq 7
 I9 lt 9
+I9 eq 4

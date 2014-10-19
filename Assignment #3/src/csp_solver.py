@@ -7,12 +7,14 @@ Created on Oct 18, 2014
 import string
 import sys
 import bisect
+import datetime
 
 
 # These variables are used to track the performance of the search
 numb_backtrack_calls = 0
 numb_var_sets = 0
 enable_performance_printing = True
+start_time = datetime.datetime.now()
 
 
 # ----------------- CSPConstraint Class ---------------- #
@@ -646,11 +648,14 @@ class CSP:
         Otherwise, it prints the solution.
         '''
         # Get variables for performance tracking
-        global numb_backtrack_calls, numb_var_sets, enable_performance_printing
+        global numb_backtrack_calls, numb_var_sets, enable_performance_printing, \
+            start_time
 
         # Start with an empty assignment
         self._assignment = {}
         solution = CSP._backtrack(self)
+        # Get the end time.
+        end_time = datetime.datetime.now()
 
         # Check the case where no solution was found
         if(solution is None):
@@ -674,6 +679,8 @@ class CSP:
             print "\n\nThere were %d calls to \"backtrack\"." \
                 % (numb_backtrack_calls)
             print "The variables were reset %d times." % (numb_var_sets)
+            print "The elapsed time is %1.3fs." \
+                % ((end_time - start_time).microseconds/1e6)
 
     @staticmethod
     def _backtrack(csp):

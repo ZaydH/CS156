@@ -661,8 +661,17 @@ class CSP:
         if(solution is None):
             handle_no_solution()
 
-        first_variable = True  # Flag for whether to print a preceding new line
+        # Sort the solution list.
+        output_list = []  # List will be sorted before outputting the result
         for var_name in self._assignment:
+            output_list.append((var_name, self._assignment[var_name]))
+
+        # Sort the output list.
+        output_list.sort(key=lambda item: item[0])
+
+        # Print the list.
+        first_variable = True  # Flag for whether to print a preceding new line
+        for var_and_value in output_list:
             output_str = ""
 
             # Print preceding new line on all variables after the first one.
@@ -671,7 +680,7 @@ class CSP:
             first_variable = False
 
             # Build the output string with var name and value.
-            output_str += var_name + "=" + str(self._assignment[var_name])
+            output_str += var_and_value[0] + "=" + str(var_and_value[1])
             print output_str,
 
         # If performance printing is enabled, print the performance.

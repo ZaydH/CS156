@@ -87,7 +87,7 @@ class CSPConstraint:
         constraint_items = CSPConstraint._parse_constraint(constraint_text)
         # Check if the constraint was correctly parseable.
         if(constraint_items is None):
-            handle_no_solution()
+            raise ValueError
 
         # Extract the operator for the constraint (e.g. "ne", "eq", etc.)
         self._operator = constraint_items[1]
@@ -545,18 +545,42 @@ class CSPVariable:
         domain values that are specified in the input list for removal.
 
         :param int domain_values_to_remove: Values to be removed from the
-        domain.
+        variable's domain.
         '''
-        # Iterate through the domain and remove inference domain values
-        i = 0
-        # Run until the end of the domain has been reached
-        while(i < len(self._domain)):
-            # If the value at index i is to be removed, then remove it
-            if(self._domain[i] in domain_values_to_remove):
-                self._domain.pop(i)
-            # Otherwise, go to the next index.
-            else:
-                i += 1
+        # Iterate through the list of variables to remove and then remove them
+        for val_to_remove in domain_values_to_remove:
+
+            # Sanity error checking.
+            if(val_to_remove not in self._domain):
+                raise RuntimeError("Error: Trying to remove a domain value "
+                                   + "that does not exist. Exiting...")
+
+            # Remove the value
+            self._domain.remove(val_to_remove)
+
+    def remove_inference(self, domain_values_to_restore):
+        '''
+        Variable Inference Remover
+
+        Removes the inference to the implicit variable by re-appending those
+        domain values that were previously removed.
+
+        :param int domain_values_to_restore: Values to be restored in the
+        variable's domain.
+        '''
+        # Iterate through the list of variables to restore
+        for val_to_restore in domain_values_to_restore:
+
+            # Sanity error checking.
+            if(val_to_restore in self._domain):
+                raise RuntimeError("Error: Trying to restore a domain value "
+                                   + "that already exists. Exiting...")
+
+            # Remove the value
+            self._domain.append(val_to_restore)
+
+        # For debug clarity sort it after restoration.
+        self._domain.sort()
 
 
 # --------------------- CSP Class  ---------------------------#

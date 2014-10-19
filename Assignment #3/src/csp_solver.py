@@ -7,6 +7,7 @@ Created on Oct 18, 2014
 import string
 import sys
 import bisect
+import random
 
 
 def handle_no_solution():
@@ -288,6 +289,16 @@ class CSPVariable:
         self._domain = domain
         return
 
+    def get_domain(self):
+        '''
+        Variable Domain Accessor
+
+        Returns the domain of a variable.
+
+        :returns: int List of the object's current domain.
+        '''
+        return self._domain
+
     def add_constraint(self, constraint):
         '''
         Constraint Adder
@@ -388,8 +399,77 @@ class CSPVariable:
             if(other_variable_name not in assignment):
                 out_degree += 1
 
-        # Return the outdegree of this variable.
+        # Return the out degree of this variable.
         return out_degree
+
+    def get_binary_constraints(self):
+        '''
+        Variable Binary Constraint Accessor
+
+        Accessor to get an object's binary constraints.
+
+        :returns: CSPConstraint List of the variable's binary constraints
+        '''
+        return self._binary_constraints
+
+    def get_neighbors(self):
+        '''
+        Variable Neighbor List Constructor
+
+        Builds and returns a list of the names of all neighbors of this
+        variable.
+
+        :returns: str List of the names of this variable's neighbors.
+        '''
+        neighbors = []
+        # Go through all of the variable's binary constraints.
+        for constraint in self._binary_constraints:
+            constraint_vars = constraint.get_variables()
+            # Iterate through variables in the binary constraints
+            for var_name in constraint_vars:
+                # Only add a variable to neighbors if it is none duplicate
+                # and not itself.
+                if(var_name != self.name and var_name not in neighbors):
+                    neighbors.append(var_name)
+        # Return the list of neighbors
+        return neighbors
+
+    def get_neighbor_reduction(self, value, neighbor):
+        '''
+        Neighbor Reduction Count Checker
+
+        Determines the number of elements removed from the neighbor's domain.
+        This is used in the Least Constraining Value heuristic where the lower
+        the reduction in a neighbor's domain, the better.
+
+        :returns: int Number of elements removed from the neighbor's domain
+        '''
+        domain_reduction = 0
+
+        # Only check relevant constraints to reduce time complexity.
+        relevent_constraints = []
+        for constraint in self._binary_constraints:
+            # See if the other variable is in this constraint
+            if(neighbor.name in constraint.get_variables()):
+                relevent_constraints.append(constraint)
+
+        # Iterate through the list of neighbor values and get if this
+        # assignment reduces its domain.
+        for neighbor_val in neighbor._domain:
+            # Iterate through all binary constraints
+            for constraint in relevent_constraints:
+                # Check the case where the implicit variable is first in
+                # the constraint
+                if(constraint[0] == self.name and
+                   not constraint.check_satisfaction(value, neighbor_val)):
+                    domain_reduction += 1
+                # Check the case where the other object is first
+                elif(constraint[1] == self.name and
+                     not constraint.check_satisfaction(neighbor_val, value)):
+                    domain_reduction += 1
+
+        # Return the domain reduction
+        return domain_reduction
 
     def is_unassigned(self):
         '''
@@ -615,9 +695,47 @@ class CSP:
         return fail_first_variable
 
     def order_domain_variables(self, variable):
-        # FIX ME - Need to implement code to order domain variables.
-        print "Need to order domain variables"
-        return variable._domain
+        '''
+        Backtrack Domain Variable Sorter
+
+        :returns: int List of domain variables with values most likely to
+        succeed in search first.
+        '''
+        # Create the array that stores how much each domain values constrains
+        # other values
+        constraining_val_list = []
+
+        # Iterate through all domain variables.
+        variable_domain = variable.get_domain()
+        # Get a list of the names of neighbors
+        neighbor_names = variable.get_neighbors()
+        # Iterate through all domain variables and determine the resulting
+        # reduction in the domain of other variables.
+        for d_i in variable_domain:
+            # Initialize no domain sizes.
+            domain_reduction = 0
+            # Iterate through the list of neighbors
+            for neighbor_name in neighbor_names:
+                neighbor = csp._variables[neighbor_name]
+                # Get the reduction of the neighbor's domain with this assn.
+                domain_reduction += variable.get_neighbor_reduction(d_i,
+                                                                    neighbor)
+
+            # Append the domain value to the list as a tuple which includes
+            # the value and the total domain reduction.
+            constraining_val_list.append((d_i, domain_reduction))
+
+        # Sort the variable constrain counts based of number of constrained
+        # domains.
+        constraining_val_list.sort(key=lambda value: value[1])
+
+        # Build the output list of values
+        output_list = []
+        for val in constraining_val_list:
+            # Array index 0 is the value
+            output_list.append(val[0])
+        # Output the list.
+        return output_list
 
 
 '''-----------------------------------------------------------------------

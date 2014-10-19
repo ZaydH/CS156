@@ -458,13 +458,14 @@ class CSPVariable:
         for neighbor_val in neighbor._domain:
             # Iterate through all binary constraints
             for constraint in relevent_constraints:
+                constraint_vars = constraint.get_variables()
                 # Check the case where the implicit variable is first in
                 # the constraint
-                if(constraint[0] == self.name and
+                if(constraint_vars[0] == self.name and
                    not constraint.check_satisfaction(value, neighbor_val)):
                     domain_reduction += 1
                 # Check the case where the other object is first
-                elif(constraint[1] == self.name and
+                elif(constraint_vars[1] == self.name and
                      not constraint.check_satisfaction(neighbor_val, value)):
                     domain_reduction += 1
 
@@ -717,6 +718,9 @@ class CSP:
             # Iterate through the list of neighbors
             for neighbor_name in neighbor_names:
                 neighbor = csp._variables[neighbor_name]
+                # Only check for domain reduction if the variable is unassigned
+                if(not neighbor.is_unassigned()):
+                    continue
                 # Get the reduction of the neighbor's domain with this assn.
                 domain_reduction += variable.get_neighbor_reduction(d_i,
                                                                     neighbor)

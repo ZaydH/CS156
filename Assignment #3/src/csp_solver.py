@@ -693,14 +693,14 @@ class CSP:
         # Get variables for performance tracking
         global numb_backtrack_calls, numb_var_sets, enable_performance_printing
 
-        # Increment the number of times increment is called.
-        if(enable_performance_printing):
-            numb_backtrack_calls += 1
-
         # If the assignment is complete, then return true.
         # No need to check consistency since it is checked during assignment
         if(csp.is_assignment_complete()):
             return csp._assignment
+
+        # Increment the number of times increment is called.
+        if(enable_performance_printing):
+            numb_backtrack_calls += 1
 
         # Select the next variable to be assigned using MRV Heuristic
         next_var = csp.select_unassigned_variable()

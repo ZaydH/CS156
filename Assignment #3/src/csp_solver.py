@@ -7,7 +7,6 @@ Created on Oct 18, 2014
 import string
 import sys
 import bisect
-import random
 
 
 def handle_no_solution():
@@ -434,17 +433,59 @@ class CSPVariable:
         # Return the list of neighbors
         return neighbors
 
-    def get_neighbor_reduction(self, value, neighbor):
+    def get_neighbor_reduction_count(self, value, neighbor):
         '''
-        Neighbor Reduction Count Checker
+        Neighbor Domain Reduction Count Checker
 
         Determines the number of elements removed from the neighbor's domain.
         This is used in the Least Constraining Value heuristic where the lower
         the reduction in a neighbor's domain, the better.
 
+        :param int value: Value to be assigned to the implicit variable.
+        :param CSPVariable neighbor: Neighbor value whose domain is checked
+
         :returns: int Number of elements removed from the neighbor's domain
         '''
-        domain_reduction = 0
+        return self._get_neighbor_reduction(value, neighbor, True)
+
+    def get_neighbor_inconsistent_values(self, value, neighbor):
+        '''
+        Neighbor Domain Reduction Generator
+
+        Generates the list of the neighbor's domain values that will be removed
+        if the implicit variable is assigned to the specified "value".
+
+        :param int value: Value to be assigned to the implicit variable.
+        :param CSPVariable neighbor: Neighbor value whose domain is checked
+
+        :returns: int List of inconsistent values in neighbor's domain
+        '''
+        return self._get_neighbor_reduction(value, neighbor, False)
+
+    def _get_neighbor_reduction(self, value, neighbor, return_count):
+        '''
+        Neighbor Domain Reduction Checker
+
+        This function can be used to determine the number of elements in a
+        neighbor's domain that are removed (if "return_count" is True). It
+        can also be used to determine elements removed as part of an arc
+        consistency check for forward checking (if "return_count" is False).
+
+        :param int value: Value to be assigned to the implicit variable.
+        :param CSPVariable neighbor: Neighbor value whose domain is checked
+        :param bool return_count: True returns the number of elements removed
+                                  False returns the list of elements removed.
+
+        :returns: Number of elements (int) removed from the neighbor's domain
+        if return_count is true.  Otherwise, it returns the specific values
+        removed if return_count is false.
+        '''
+        # Initialize the variables to be used depending on how this
+        # function is called
+        if(return_count):
+            domain_reduction = 0
+        else:
+            removed_neighbor_values = []
 
         # Only check relevant constraints to reduce time complexity.
         relevent_constraints = []
@@ -459,18 +500,24 @@ class CSPVariable:
             # Iterate through all binary constraints
             for constraint in relevent_constraints:
                 constraint_vars = constraint.get_variables()
-                # Check the case where the implicit variable is first in
-                # the constraint
-                if(constraint_vars[0] == self.name and
-                   not constraint.check_satisfaction(value, neighbor_val)):
-                    domain_reduction += 1
-                # Check the case where the other object is first
-                elif(constraint_vars[1] == self.name and
-                     not constraint.check_satisfaction(neighbor_val, value)):
-                    domain_reduction += 1
+                # Check whether the constraint is satisifed
+                if (constraint_vars[0] == self.name and
+                   not constraint.check_satisfaction(value, neighbor_val)) \
+                   or (constraint_vars[1] == self.name and
+                       not constraint.check_satisfaction(neighbor_val, value)):
+                    # if it is not satisfied, either update the reduction
+                    # counter or mark the variable for removal
+                    if(return_count):
+                        domain_reduction += 1
+                    else:
+                        removed_neighbor_values.append(neighbor_val)
 
-        # Return the domain reduction
-        return domain_reduction
+        # Return the domain reduction if specified
+        if(return_count):
+            return domain_reduction
+        # Return elements removed from the neighbor's domain
+        else:
+            return removed_neighbor_values
 
     def is_unassigned(self):
         '''
@@ -489,6 +536,27 @@ class CSPVariable:
                                       False otherwise
         '''
         self._unassigned = unassigned_state
+
+    def apply_inference(self, domain_values_to_remove):
+        '''
+        Variable Inference Applier
+
+        Applies the inference to the implicit variable by removing those
+        domain values that are specified in the input list for removal.
+
+        :param int domain_values_to_remove: Values to be removed from the
+        domain.
+        '''
+        # Iterate through the domain and remove inference domain values
+        i = 0
+        # Run until the end of the domain has been reached
+        while(i < len(self._domain)):
+            # If the value at index i is to be removed, then remove it
+            if(self._domain[i] in domain_values_to_remove):
+                self._domain.pop(i)
+            # Otherwise, go to the next index.
+            else:
+                i += 1
 
 
 # --------------------- CSP Class  ---------------------------#
@@ -722,8 +790,9 @@ class CSP:
                 if(not neighbor.is_unassigned()):
                     continue
                 # Get the reduction of the neighbor's domain with this assn.
-                domain_reduction += variable.get_neighbor_reduction(d_i,
-                                                                    neighbor)
+                element_count = variable.get_neighbor_reduction_count(d_i,
+                                                                      neighbor)
+                domain_reduction += element_count
 
             # Append the domain value to the list as a tuple which includes
             # the value and the total domain reduction.

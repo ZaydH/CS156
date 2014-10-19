@@ -1,0 +1,8 @@
+python csp_solver.py australia.txt 0 > ".\Results\Australia_No_Checking.txt"
+python csp_solver.py australia.txt 1 > ".\Results\Australia_with_Checking.txt"
+python csp_solver.py Sudoku_Easy.txt 1 > ".\Results\Easiest_with_Checking.txt"
+python csp_solver.py Sudoku_Easy.txt 1 > ".\Results\Easy_with_Checking.txt"
+python csp_solver.py Sudoku_Medium.txt 1 > ".\Results\Medium_with_Checking.txt"
+python csp_solver.py Sudoku_Hard.txt 1 > ".\Results\Hard_with_Checking.txt"
+python csp_solver.py Sudoku_Hardest.txt 1 > ".\Results\Hardest_with_Checking.txt"
+python csp_solver.py Sudoku_Easy.txt 0 > ".\Results\Easiest_No_Checking.txt"

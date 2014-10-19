@@ -1,0 +1,15 @@
+WA ne NT
+SA ne WA
+WE lt 3
+NT lt 3
+NT ne SA
+SA lt 3
+Q lt 3
+T lt 3
+Q ne NT
+Q ne SA
+V ne NSW
+NSW ne Q
+SA ne NSW
+NSW lt 3
+V lt 3

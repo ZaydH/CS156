@@ -79,7 +79,7 @@ class CSPConstraint:
             handle_no_solution()
 
         # Extract the operator for the constraint (e.g. "ne", "eq", etc.)
-        self._operator = constraint_text[1]
+        self._operator = constraint_items[1]
         # Check if there is a unary or binary constraint.
         if(isinstance(constraint_items[2], (int, long))):
             self._variables = (constraint_items[0],)
@@ -89,7 +89,6 @@ class CSPConstraint:
             self._variables = (constraint_items[0], constraint_items[2])
             self._constraint_integer = None
 
-    @property
     def is_binary_constraint(self):
         '''
         Constraint Size Property
@@ -136,6 +135,33 @@ class CSPConstraint:
                                + "a non-unary constraint")
         return self._constraint_integer
 
+    def check_satisfaction(self, variable1_value, variable2_value):
+        '''
+        Constraint Satisfaction Checker
+
+        Checks whether the two specified variables satisfy the constraint.
+        Only works for binary constraints.
+
+        :returns: bool True if the constraint is satisfied and False otherwise.
+        '''
+        if(not self.is_binary_constraint()):
+            raise RuntimeError("Method \"check_satisfication\" only supports "
+                               + "binary constraints.")
+
+        # Check the four possible constrain conditions
+        if(self.operator == "ne"):
+            return variable1_value != variable1_value
+        elif(self.operator == "eq"):
+            return variable1_value == variable1_value
+        elif(self.operator == "lt"):
+            return variable1_value < variable1_value
+        elif(self.operator == "gt"):
+            return variable1_value > variable1_value
+
+        raise RuntimeError("Invalid operator specified for constraint check")
+
+# ------------------ CSP Variable Class ---------------------- #
+
 
 class CSPVariable:
 
@@ -156,6 +182,17 @@ class CSPVariable:
         '''
         return self._name.hash()
 
+    @property
+    def name(self):
+        '''
+        Variable Name Property
+
+        Accessor for the variable's name.
+
+        :returns: str Variable's name
+        '''
+        return self._name
+
     def build_initial_domain(self):
         '''
         Initial Domain Builder:
@@ -170,7 +207,7 @@ class CSPVariable:
         #  Cycle through all constraints
         for constraint in self._unary_constraints:
             operator = constraint.operator
-            constraint_int = constraint._int
+            constraint_int = constraint.integer_constraint
             # Handle the case of an equal operator
             if(operator == "eq"):
                 # Check no other equal value has been specified
@@ -194,18 +231,18 @@ class CSPVariable:
             # Track worst case end value only
             elif(operator == "gt"):
                 # Since greater than the real value is one less
-                constraint_int = constraint_int - 1
+                constraint_int = constraint_int + 1
                 # Update ending value if needed
-                if(ending_value < constraint_int):
-                    ending_value = constraint_int
+                if(starting_value < constraint_int):
+                    starting_value = constraint_int
 
             # Track worst case starting value only
             elif(operator == "lt"):
                 # Since greater than the real value is one less
-                constraint_int = constraint_int + 1
+                constraint_int = constraint_int - 1
                 # Update starting value if needed
-                if(starting_value > constraint_int):
-                    starting_value = constraint_int
+                if(ending_value > constraint_int):
+                    ending_value = constraint_int
 
         # Process the equal value first since it is a special case
         if(eq_value != -1):
@@ -240,11 +277,46 @@ class CSPVariable:
         Method manages handling of binary and unary constraints itself.
         '''
         # If it is a binary constraint append it to the binary constraints
-        if(constraint.is_binary_constraint):
+        if(constraint.is_binary_constraint()):
             self._binary_constraints.append(constraint)
         # Add it to the unary constraints
         else:
             self._unary_constraints.append(constraint)
+
+    def _check_assignment_consistent(self, assignment, value):
+        # Assume consistency and verified in the function.
+        assignment_consistent = True
+
+        # Iterate through all the variable's binary constraints.
+        for constraint in self._binary_constraints:
+            # Get the variables
+            variables = constraint.get_variables()
+            # Verify if this variable is the first one.
+            if(variables[0] == self._name):
+                is_first_var = True  # If variable is first one in constraint
+                other_variable_name = variables[1]
+            else:
+                is_first_var = False  # If variable is first one in constraint
+                other_variable_name = variables[0]
+
+            # If other variable is not assigned, go to next constraint
+            if(other_variable_name not in assignment):
+                continue
+            else:
+                # Get the other variable's value
+                other_value = assignment[other_variable_name]
+
+            # Check if the constraint is satisfied
+            if((is_first_var
+                and not constraint.check_satisfaction(value, other_value))
+               or (is_first_var
+                   and not constraint.check_satisfaction(other_value, value))):
+                # Constraint not satisfied
+                assignment_consistent = False
+                break
+
+        # Return the result.
+        return assignment_consistent
 
     def get_domain_size(self):
         '''
@@ -261,6 +333,20 @@ class CSPVariable:
         :returns: True if the variable is unassigned
         '''
         return self._unassigned
+
+    def set_unassigned_state(self, unassigned_state):
+        '''
+        Variable Assignment State Mutator
+
+        Updates whether a variable is unassigned or assigned
+
+        :param bool unassigned state: True if variable unassigned,
+                                      False otherwise
+        '''
+        self._unassigned = unassigned_state
+
+
+# --------------------- CSP Class  ---------------------------#
 
 
 class CSP:
@@ -282,13 +368,15 @@ class CSP:
         # Parse the file information.
         try:
             for file_line in open(filename):
+                # Remove trailing newline
+                file_line = file_line.rstrip("\n")
                 # Building the binary constraint
                 constraint = CSPConstraint(file_line)
                 # Get the variables in the constraint
                 constraint_vars = constraint.get_variables()
                 # Check if the variable needs to be added to the list
                 for var in constraint_vars:
-                    if(var not in self.variables):
+                    if(var not in self._variables):
                         new_var = CSPVariable(var)
                         self._variables[var] = new_var
                     # Add the constraint to the variable
@@ -297,12 +385,13 @@ class CSP:
                 # The class also stores references to the binary constraints
                 if(constraint.is_binary_constraint()):
                     self._binary_constraints.append(constraint)
-        except:
+        except Exception as e:
             handle_no_solution()
 
         # Build the domain for each variable
-        for var in self._variables:
-            var.build_initial_domain()
+        for var_name in self._variables:
+            temp_var = self._variables[var_name]
+            temp_var.build_initial_domain()
 
     def execute_back_track_search(self):
         # Start with an empty assignment
@@ -328,7 +417,64 @@ class CSP:
 
     @staticmethod
     def _backtrack(csp):
-        pass
+        # If the assignment is complete, then return true.
+        # No need to check consistency since it is checked during assignment
+        if(csp.is_assignment_complete()):
+            return csp._assignment
+
+        # Select the next variable to be assigned using MRV Heuristic
+        next_var = csp.select_unassigned_variable()
+
+        # Order the domain values for that variable.
+        next_var_domain = csp.order_domain_variables(next_var)
+
+        for d_i in next_var_domain:
+            # Try to assign the value to the variable
+            if(csp.assign_variable_value(next_var, d_i)):
+
+                CSP._backtrack(csp)
+
+                # Assignment was not successful so remove it.
+                csp.remove_variable_assignment(next_var)
+        return None
+
+    def assign_variable_value(self, variable, value):
+        '''
+        CSP Assignment Function
+
+        Function to check if a variable can be assigned to a specified value.
+        If the assignment is successful, the function returns True.  Otherwise,
+        it returns False.
+
+        :param CSPVariable variable: Variable to be assigned a value.
+        :param int value: Value to assign to the variable.
+
+        :returns: True if assignment successful. False otherwise.
+        '''
+        if(variable._check_assignment_consistent(self._assignment, value)):
+            variable.set_unassigned_state(False)  # Set the variable assigned
+            self._assignment[variable.name] = value
+            return True
+        # Not a consistent assignment so return False.
+        else:
+            return False
+
+    def remove_variable_assignment(self, variable):
+        '''
+        Variable Assignment Remover
+
+        Removes a value assignment to the specified variable.
+
+        :param CSPVariable variable: Variable whose assignment is to be removed
+        '''
+        # Ensure not trying to remove the value of an unassigned variable
+        if(variable.name not in self._assignment):
+            raise ValueError("Error: Trying to remove the value of an "
+                             + "assigned variable")
+        # Remove the assignment from the dictionary.
+        del self._assignment[variable.name]
+        # Make the variable as unassigned.
+        variable.set_unassigned_state(True)
 
     def is_assignment_complete(self):
         '''
@@ -359,7 +505,8 @@ class CSP:
         fail_first_variable = None
         minimum_domain_size = sys.maxint
         # Find the variable with the smallest domain
-        for var in self._variables:
+        for var_name in self._variables:
+            var = self._variables[var_name]
             # Variable must not already be unassigned
             # And the domain size must be smaller than current min
             if(var.is_unassigned()
@@ -372,6 +519,11 @@ class CSP:
             raise RuntimeError("No variable was selected for assignment.")
 
         return fail_first_variable
+
+    def order_domain_variables(self, variable):
+        # FIX ME - Need to implement code to order domain variables.
+        print "Need to order domain variables"
+        return variable._domain
 
 
 '''-----------------------------------------------------------------------
@@ -398,8 +550,3 @@ forward_checking_flag = int(sys.argv[2])
 csp = CSP(csp_info_file_name, forward_checking_flag)
 
 csp.execute_back_track_search()
-
-
-# if __name__ == "__main__":
-#     import doctest
-#     doctest.testmod()

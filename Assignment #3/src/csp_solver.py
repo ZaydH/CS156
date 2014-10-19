@@ -685,9 +685,21 @@ class CSP:
             # Try to assign the value to the variable
             if(csp.assign_variable_value(next_var, d_i)):
 
-                result = CSP._backtrack(csp)
-                if(result is not None):
-                    return result
+                # Generate the list of inferences
+                inferences = csp.inference(next_var, d_i)
+
+                # If inferences is not empty, then update domains
+                # and set the next variable's value.
+                if(inferences is not None):
+                    # Apply the inferences
+                    csp.apply_inferences(inferences)
+                    # Run backtrack search with the reduced domains
+                    result = CSP._backtrack(csp)
+                    # If a solution is found, return it
+                    if(result is not None):
+                        return result
+                    # Since no solution found, remove the inferences
+                    csp.remove_inferences(inferences)
 
                 # Assignment was not successful so remove it.
                 csp.remove_variable_assignment(next_var)
@@ -835,7 +847,20 @@ class CSP:
         return output_list
 
     def inference(self, variable, value):
+        '''
+        Arc Consistency Inference Algorithm
 
+        This function generates an associative array of variable values
+        to be removed given the assignment of "value" to the variable
+        "variable".
+
+        :param: CSPVariable variable: Variable to be assigned a value
+        :param: int value: Value to be assigned to parameter "variable".
+
+        :returns: Dictionary of values to be removed for the unassigned
+        neighbors of "variable" if forward checking is enabled. Otherwise
+        it returns an empty dictionary.
+        '''
         # Iinitialize the inferences
         inferences = {}
         # If forward checking is not enabled, then return empty inferences
@@ -869,6 +894,47 @@ class CSP:
 
         # Return the set of inferences
         return inferences
+
+    def apply_inferences(self, inferences):
+        '''
+        CSP Inference Applies
+
+        Applies the inferences specified in the input parameter "inferences"
+        to all unassigned variables.
+
+        :param dict inferences: Associative array of variable names and
+        lists of domain variables to be removed for that variable.
+        '''
+        # Iterate through the variables whose domain is to be reduced through
+        # inference and apply the inferences.
+        for var_name in inferences:
+            # Get the list of domain values to be removed from the variable's
+            # domain
+            values_to_remove = inferences[var_name]
+            # Get the variable object
+            var = self._variables[var_name]
+            # Apply the inference
+            var.apply_inference(values_to_remove)
+
+    def remove_inferences(self, inferences):
+        '''
+        CSP Inference Remover
+
+        Removes the inferences defined in the input parameter "inferences"
+        from all unassigned variables.
+
+        :param dict inferences: Associative array of variable names and
+        lists of domain variables to be removed for that variable.
+        '''
+        # Iterate through the variables whose domain was reduced through
+        # inference and remove the inferences.
+        for var_name in inferences:
+            # Get the list of domain values to be restored for the variable
+            values_to_restore = inferences[var_name]
+            # Get the variable object
+            var = self._variables[var_name]
+            # Remove the inference
+            var.remove_inference(values_to_restore)
 
 '''-----------------------------------------------------------------------
                          Parse Input Arguments

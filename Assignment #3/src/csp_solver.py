@@ -9,15 +9,13 @@ import sys
 import bisect
 
 
-def handle_no_solution():
-    '''
-    Generic Handler of an invalid input and when there is no solution.
+# These variables are used to track the performance of the search
+numb_backtrack_calls = 0
+numb_var_sets = 0
+enable_performance_printing = True
 
-    Prints "NO SOLUTION" and cleanly exits the program.
-    '''
-    print "NO SOLUTION"
-    sys.exit(0)
 
+# ----------------- CSPConstraint Class ---------------- #
 
 class CSPConstraint:
     '''
@@ -647,6 +645,9 @@ class CSP:
         Result: Prints "NO SOLUTION" if no solution is found.
         Otherwise, it prints the solution.
         '''
+        # Get variables for performance tracking
+        global numb_backtrack_calls, numb_var_sets, enable_performance_printing
+
         # Start with an empty assignment
         self._assignment = {}
         solution = CSP._backtrack(self)
@@ -668,8 +669,27 @@ class CSP:
             output_str += var_name + "=" + str(self._assignment[var_name])
             print output_str,
 
+        # If performance printing is enabled, print the performance.
+        if(enable_performance_printing):
+            print "\n\nThere were %d calls to \"backtrack\"." \
+                % (numb_backtrack_calls)
+            print "The variables were reset %d times." % (numb_var_sets)
+
     @staticmethod
     def _backtrack(csp):
+        '''
+        Recursive Backtracking Search Function
+
+        Called as a static method by a CSP object.  It recurses searching for a
+        solution to the specified CSP
+        '''
+        # Get variables for performance tracking
+        global numb_backtrack_calls, numb_var_sets, enable_performance_printing
+
+        # Increment the number of times increment is called.
+        if(enable_performance_printing):
+            numb_backtrack_calls += 1
+
         # If the assignment is complete, then return true.
         # No need to check consistency since it is checked during assignment
         if(csp.is_assignment_complete()):
@@ -681,7 +701,13 @@ class CSP:
         # Order the domain values for that variable.
         next_var_domain = csp.order_domain_variables(next_var)
 
+        # Iterate through the domain variables
         for d_i in next_var_domain:
+            # If performance tracking is enabled, track the number times
+            # a variable is set
+            if(enable_performance_printing):
+                numb_var_sets += 1
+
             # Try to assign the value to the variable
             if(csp.assign_variable_value(next_var, d_i)):
 
@@ -936,6 +962,16 @@ class CSP:
             # Remove the inference
             var.remove_inference(values_to_restore)
 
+
+def handle_no_solution():
+    '''
+    Generic Handler of an invalid input and when there is no solution.
+
+    Prints "NO SOLUTION" and cleanly exits the program.
+    '''
+    print "NO SOLUTION"
+    sys.exit(0)
+
 '''-----------------------------------------------------------------------
                          Parse Input Arguments
 ------------------------------------------------------------------------'''
@@ -947,7 +983,7 @@ if(len(sys.argv) > 3):
 csp_info_file_name = sys.argv[1]
 
 # Verify a valid flag for forward checking.
-if(sys.argv[2] != "1" and sys.argv[2] != "2"):
+if(sys.argv[2] != "0" and sys.argv[2] != "1"):
     handle_no_solution()
 # Extract the forward checking flag.
 forward_checking_flag = int(sys.argv[2])

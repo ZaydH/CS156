@@ -1,6 +1,6 @@
 WA ne NT
 SA ne WA
-WE lt 3
+WA lt 3
 NT lt 3
 NT ne SA
 SA lt 3

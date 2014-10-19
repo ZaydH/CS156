@@ -150,13 +150,13 @@ class CSPConstraint:
 
         # Check the four possible constrain conditions
         if(self.operator == "ne"):
-            return variable1_value != variable1_value
+            return variable1_value != variable2_value
         elif(self.operator == "eq"):
-            return variable1_value == variable1_value
+            return variable1_value == variable2_value
         elif(self.operator == "lt"):
-            return variable1_value < variable1_value
+            return variable1_value < variable2_value
         elif(self.operator == "gt"):
-            return variable1_value > variable1_value
+            return variable1_value > variable2_value
 
         raise RuntimeError("Invalid operator specified for constraint check")
 
@@ -166,6 +166,13 @@ class CSPConstraint:
 class CSPVariable:
 
     def __init__(self, name):
+        '''
+        Constructor for the CSP Variable class.
+
+        By default, it stores the variables name (which is immutable)
+        and creates empty lists for its unary and binary constraints
+        as well as for its domain.
+        '''
         self._name = name
         # Start with an empty domain and then build it later.
         self._domain = []
@@ -309,7 +316,7 @@ class CSPVariable:
             # Check if the constraint is satisfied
             if((is_first_var
                 and not constraint.check_satisfaction(value, other_value))
-               or (is_first_var
+               or (not is_first_var
                    and not constraint.check_satisfaction(other_value, value))):
                 # Constraint not satisfied
                 assignment_consistent = False
@@ -326,6 +333,31 @@ class CSPVariable:
         :returns: int Domain size - Number of elements in the domain
         '''
         return len(self._domain)
+
+    def get_variable_degree(self, assignment):
+        '''
+        '''
+        out_degree = 0  # Set default outdegree of this variable.
+
+        # Iterate through all binary constraints to
+        # determine the variable's degree
+        for constraint in self._binary_constraints:
+            # Extracts the variables in the constraint
+            variables = constraint.get_variables()
+
+            # Extract name of the other variable.
+            if(variables[0] == self.name()):
+                other_variable_name = variables[1]
+            else:
+                other_variable_name = variables[0]
+
+            # Check if the other variable is not assigned.
+            # If so, increment the degree heuristic.
+            if(other_variable_name not in assignment):
+                out_degree += 1
+
+        # Return the outdegree of this variable.
+        return out_degree
 
     def is_unassigned(self):
         '''
@@ -385,7 +417,7 @@ class CSP:
                 # The class also stores references to the binary constraints
                 if(constraint.is_binary_constraint()):
                     self._binary_constraints.append(constraint)
-        except Exception as e:
+        except:
             handle_no_solution()
 
         # Build the domain for each variable
@@ -393,16 +425,16 @@ class CSP:
             temp_var = self._variables[var_name]
             temp_var.build_initial_domain()
 
-    def execute_back_track_search(self):
+    def execute_backtrack_search(self):
         # Start with an empty assignment
         self._assignment = {}
-        solution = CSP.execute_back_track_search(self)
+        solution = CSP._backtrack(self)
 
         # Check the case where no solution was found
         if(solution is None):
             handle_no_solution()
 
-        first_variable = True  # Flag for wheter to print a preceding new line
+        first_variable = True  # Flag for whether to print a preceding new line
         for var_name in self._assignment:
             output_str = ""
 
@@ -432,7 +464,9 @@ class CSP:
             # Try to assign the value to the variable
             if(csp.assign_variable_value(next_var, d_i)):
 
-                CSP._backtrack(csp)
+                result = CSP._backtrack(csp)
+                if(result is not None):
+                    return result
 
                 # Assignment was not successful so remove it.
                 csp.remove_variable_assignment(next_var)
@@ -549,4 +583,4 @@ forward_checking_flag = int(sys.argv[2])
 # Build the CSP
 csp = CSP(csp_info_file_name, forward_checking_flag)
 
-csp.execute_back_track_search()
+csp.execute_backtrack_search()

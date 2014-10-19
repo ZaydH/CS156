@@ -835,5 +835,5 @@ I7 ne I9
 I7 eq 8
 I8 lt 9
 I8 ne I9
+I8 eq 4
 I9 lt 9
-I9 eq 4

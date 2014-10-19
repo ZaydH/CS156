@@ -9,6 +9,11 @@ import sys
 import bisect
 
 
+def handle_no_solution():
+    print "NO SOLUTION"
+    sys.exit(0)
+
+
 class CSPConstraint:
 
     _variable_relation = ["eq", "ne", "lt", "gt"]
@@ -71,8 +76,7 @@ class CSPConstraint:
         constraint_items = CSPConstraint._parse_constraint(constraint_text)
         # Check if the constraint was correctly parseable.
         if(constraint_items is None):
-            print "NO SOLUTION"
-            sys.exit(0)
+            handle_no_solution()
 
         # Extract the operator for the constraint (e.g. "ne", "eq", etc.)
         self._operator = constraint_text[1]
@@ -259,17 +263,23 @@ class CSPVariable:
         return self._unassigned
 
 
-class CSPSolver:
+class CSP:
     '''
     CSP Solver class.  This mimics the "CSP" object in
     the pseudocode in the textbook.
     '''
-    def __init__(self, filename):
+    def __init__(self, filename, forward_checking_flag):
 
         self._variables = {}
         self._binary_constraints = []
         self._assignment = {}
+        # Set whether forward checking is enabled
+        if(forward_checking_flag == 1):
+            self._forward_check_enable = True
+        else:
+            self._forward_check_enable = False
 
+        # Parse the file information.
         try:
             for file_line in open(filename):
                 # Building the binary constraint
@@ -288,12 +298,54 @@ class CSPSolver:
                 if(constraint.is_binary_constraint()):
                     self._binary_constraints.append(constraint)
         except:
-            print "NO SOLUTION"
-            sys.exit(0)
+            handle_no_solution()
 
         # Build the domain for each variable
         for var in self._variables:
             var.build_initial_domain()
+
+    def execute_back_track_search(self):
+        # Start with an empty assignment
+        self._assignment = {}
+        solution = CSP.execute_back_track_search(self)
+
+        # Check the case where no solution was found
+        if(solution is None):
+            handle_no_solution()
+
+        first_variable = True  # Flag for wheter to print a preceding new line
+        for var_name in self._assignment:
+            output_str = ""
+
+            # Print preceding new line on all variables after the first one.
+            if(not first_variable):
+                output_str += "\n"
+            first_variable = False
+
+            # Build the output string with var name and value.
+            output_str += var_name + "=" + str(self._assignment[var_name])
+            print output_str,
+
+    @staticmethod
+    def _backtrack(csp):
+        pass
+
+    def is_assignment_complete(self):
+        '''
+        Assignment Completeness Checker
+
+        Determines whether the CSP assignment is complete.
+
+        :returns: bool - True if Assignment is complete. False otherwise.
+        '''
+        complete_assn = True  # By default assignment is complete.
+        for var in self._variables:
+            # Check if the variable is unassigned
+            if(self._variables[var].is_unassigned()):
+                # Assignment not complete since var is unassigned
+                complete_assn = False
+                break
+        return complete_assn
 
     def select_unassigned_variable(self):
         '''
@@ -321,6 +373,33 @@ class CSPSolver:
 
         return fail_first_variable
 
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+
+'''-----------------------------------------------------------------------
+                         Parse Input Arguments
+------------------------------------------------------------------------'''
+# Verify the right number of input arguments specified.
+if(len(sys.argv) > 3):
+    handle_no_solution()
+
+# Get the name of the file containing the csp definition
+csp_info_file_name = sys.argv[1]
+
+# Verify a valid flag for forward checking.
+if(sys.argv[2] != "1" and sys.argv[2] != "2"):
+    handle_no_solution()
+# Extract the forward checking flag.
+forward_checking_flag = int(sys.argv[2])
+
+'''-----------------------------------------------------------------------
+                   Build the CSP and then Run Search
+------------------------------------------------------------------------'''
+
+# Build the CSP
+csp = CSP(csp_info_file_name, forward_checking_flag)
+
+csp.execute_back_track_search()
+
+
+# if __name__ == "__main__":
+#     import doctest
+#     doctest.testmod()

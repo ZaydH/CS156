@@ -834,6 +834,41 @@ class CSP:
         # Output the list.
         return output_list
 
+    def inference(self, variable, value):
+
+        # Iinitialize the inferences
+        inferences = {}
+        # If forward checking is not enabled, then return empty inferences
+        if(not self._forward_check_enable):
+            return inferences
+
+        # Get a list of the variables neighbors
+        neighbor_names = variable.get_neighbors()
+        # Iterate through the neighbors
+        for neighbor_name in neighbor_names:
+            # Get the neighbor variable
+            neighbor = csp._variables[neighbor_name]
+            # Only check unassigned neighbors
+            if(not neighbor.is_unassigned()):
+                continue
+
+            # Get the list of values to remove from the neighbor's domain
+            val_to_remove = variable.get_neighbor_inconsistent_values(value,
+                                                                      neighbor)
+
+            # If the set of values to remove is empty, then go to next neighbor
+            if(len(val_to_remove) == 0):
+                continue
+            # If after applying inferences the neighbor's domain is empty,
+            # then return no inferences
+            if(len(val_to_remove) == len(neighbor.get_domain())):
+                return None
+
+            # Since all criteria met, store the updated inference
+            inferences[neighbor_name] = val_to_remove
+
+        # Return the set of inferences
+        return inferences
 
 '''-----------------------------------------------------------------------
                          Parse Input Arguments

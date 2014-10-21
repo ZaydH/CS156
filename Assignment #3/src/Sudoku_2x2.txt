@@ -13,6 +13,7 @@ A2 ne A4
 A2 ne B2
 A2 ne C2
 A2 ne D2
+A2 ne B1
 A3 lt 4
 A3 ne A4
 A3 ne B3
@@ -23,6 +24,7 @@ A4 lt 4
 A4 ne B4
 A4 ne C4
 A4 ne D4
+A4 ne B3
 B1 lt 4
 B1 ne B2
 B1 ne B3
@@ -53,12 +55,14 @@ C2 lt 4
 C2 ne C3
 C2 ne C4
 C2 ne D2
+C2 ne D1
 C3 lt 4
 C3 ne C4
 C3 ne D3
 C3 ne D4
 C4 lt 4
 C4 ne D4
+C4 ne D3
 D1 lt 4
 D1 ne D2
 D1 ne D3

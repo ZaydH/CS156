@@ -688,8 +688,10 @@ class CSP:
             print "\n\nThere were %d calls to \"backtrack\"." \
                 % (numb_backtrack_calls)
             print "The variables were reset %d times." % (numb_var_sets)
-            print "The elapsed time is %1.3fs." \
-                % ((end_time - start_time).microseconds/1e6)
+            # print the elapsed time
+            print "The elapsed time is %d.%03ds." \
+                % ((end_time - start_time).seconds,
+                   (end_time - start_time).microseconds/1e3)
 
     @staticmethod
     def _backtrack(csp):

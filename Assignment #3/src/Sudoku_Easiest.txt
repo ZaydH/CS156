@@ -36,7 +36,9 @@ A2 ne F2
 A2 ne G2
 A2 ne H2
 A2 ne I2
+A2 ne B1
 A2 ne B3
+A2 ne C1
 A2 ne C3
 A2 eq 1
 A3 lt 9
@@ -54,6 +56,10 @@ A3 ne F3
 A3 ne G3
 A3 ne H3
 A3 ne I3
+A3 ne B1
+A3 ne B2
+A3 ne C1
+A3 ne C2
 A4 lt 9
 A4 ne A5
 A4 ne A6
@@ -86,7 +92,9 @@ A5 ne F5
 A5 ne G5
 A5 ne H5
 A5 ne I5
+A5 ne B4
 A5 ne B6
+A5 ne C4
 A5 ne C6
 A6 lt 9
 A6 ne A7
@@ -100,6 +108,10 @@ A6 ne F6
 A6 ne G6
 A6 ne H6
 A6 ne I6
+A6 ne B4
+A6 ne B5
+A6 ne C4
+A6 ne C5
 A6 eq 7
 A7 lt 9
 A7 ne A8
@@ -126,7 +138,9 @@ A8 ne F8
 A8 ne G8
 A8 ne H8
 A8 ne I8
+A8 ne B7
 A8 ne B9
+A8 ne C7
 A8 ne C9
 A8 eq 2
 A9 lt 9
@@ -138,6 +152,10 @@ A9 ne F9
 A9 ne G9
 A9 ne H9
 A9 ne I9
+A9 ne B7
+A9 ne B8
+A9 ne C7
+A9 ne C8
 B1 lt 9
 B1 ne B2
 B1 ne B3
@@ -172,6 +190,7 @@ B2 ne F2
 B2 ne G2
 B2 ne H2
 B2 ne I2
+B2 ne C1
 B2 ne C3
 B3 lt 9
 B3 ne B4
@@ -187,6 +206,8 @@ B3 ne F3
 B3 ne G3
 B3 ne H3
 B3 ne I3
+B3 ne C1
+B3 ne C2
 B3 eq 6
 B4 lt 9
 B4 ne B5
@@ -215,6 +236,7 @@ B5 ne F5
 B5 ne G5
 B5 ne H5
 B5 ne I5
+B5 ne C4
 B5 ne C6
 B6 lt 9
 B6 ne B7
@@ -227,6 +249,8 @@ B6 ne F6
 B6 ne G6
 B6 ne H6
 B6 ne I6
+B6 ne C4
+B6 ne C5
 B7 lt 9
 B7 ne B8
 B7 ne B9
@@ -249,6 +273,7 @@ B8 ne F8
 B8 ne G8
 B8 ne H8
 B8 ne I8
+B8 ne C7
 B8 ne C9
 B8 eq 5
 B9 lt 9
@@ -259,6 +284,8 @@ B9 ne F9
 B9 ne G9
 B9 ne H9
 B9 ne I9
+B9 ne C7
+B9 ne C8
 B9 eq 7
 C1 lt 9
 C1 ne C2
@@ -396,7 +423,9 @@ D2 ne F2
 D2 ne G2
 D2 ne H2
 D2 ne I2
+D2 ne E1
 D2 ne E3
+D2 ne F1
 D2 ne F3
 D3 lt 9
 D3 ne D4
@@ -410,6 +439,10 @@ D3 ne F3
 D3 ne G3
 D3 ne H3
 D3 ne I3
+D3 ne E1
+D3 ne E2
+D3 ne F1
+D3 ne F2
 D3 eq 3
 D4 lt 9
 D4 ne D5
@@ -437,7 +470,9 @@ D5 ne F5
 D5 ne G5
 D5 ne H5
 D5 ne I5
+D5 ne E4
 D5 ne E6
+D5 ne F4
 D5 ne F6
 D5 eq 2
 D6 lt 9
@@ -449,6 +484,10 @@ D6 ne F6
 D6 ne G6
 D6 ne H6
 D6 ne I6
+D6 ne E4
+D6 ne E5
+D6 ne F4
+D6 ne F5
 D7 lt 9
 D7 ne D8
 D7 ne D9
@@ -468,7 +507,9 @@ D8 ne F8
 D8 ne G8
 D8 ne H8
 D8 ne I8
+D8 ne E7
 D8 ne E9
+D8 ne F7
 D8 ne F9
 D9 lt 9
 D9 ne E9
@@ -476,6 +517,10 @@ D9 ne F9
 D9 ne G9
 D9 ne H9
 D9 ne I9
+D9 ne E7
+D9 ne E8
+D9 ne F7
+D9 ne F8
 D9 eq 5
 E1 lt 9
 E1 ne E2
@@ -505,6 +550,7 @@ E2 ne F2
 E2 ne G2
 E2 ne H2
 E2 ne I2
+E2 ne F1
 E2 ne F3
 E3 lt 9
 E3 ne E4
@@ -517,6 +563,8 @@ E3 ne F3
 E3 ne G3
 E3 ne H3
 E3 ne I3
+E3 ne F1
+E3 ne F2
 E4 lt 9
 E4 ne E5
 E4 ne E6
@@ -539,6 +587,7 @@ E5 ne F5
 E5 ne G5
 E5 ne H5
 E5 ne I5
+E5 ne F4
 E5 ne F6
 E5 eq 6
 E6 lt 9
@@ -549,6 +598,8 @@ E6 ne F6
 E6 ne G6
 E6 ne H6
 E6 ne I6
+E6 ne F4
+E6 ne F5
 E7 lt 9
 E7 ne E8
 E7 ne E9
@@ -564,6 +615,7 @@ E8 ne F8
 E8 ne G8
 E8 ne H8
 E8 ne I8
+E8 ne F7
 E8 ne F9
 E8 eq 4
 E9 lt 9
@@ -571,6 +623,8 @@ E9 ne F9
 E9 ne G9
 E9 ne H9
 E9 ne I9
+E9 ne F7
+E9 ne F8
 E9 eq 8
 F1 lt 9
 F1 ne F2
@@ -674,7 +728,9 @@ G2 ne G8
 G2 ne G9
 G2 ne H2
 G2 ne I2
+G2 ne H1
 G2 ne H3
+G2 ne I1
 G2 ne I3
 G2 eq 2
 G3 lt 9
@@ -686,6 +742,10 @@ G3 ne G8
 G3 ne G9
 G3 ne H3
 G3 ne I3
+G3 ne H1
+G3 ne H2
+G3 ne I1
+G3 ne I2
 G3 eq 7
 G4 lt 9
 G4 ne G5
@@ -706,7 +766,9 @@ G5 ne G8
 G5 ne G9
 G5 ne H5
 G5 ne I5
+G5 ne H4
 G5 ne H6
+G5 ne I4
 G5 ne I6
 G5 eq 4
 G6 lt 9
@@ -715,6 +777,10 @@ G6 ne G8
 G6 ne G9
 G6 ne H6
 G6 ne I6
+G6 ne H4
+G6 ne H5
+G6 ne I4
+G6 ne I5
 G6 eq 0
 G7 lt 9
 G7 ne G8
@@ -730,11 +796,17 @@ G8 lt 9
 G8 ne G9
 G8 ne H8
 G8 ne I8
+G8 ne H7
 G8 ne H9
+G8 ne I7
 G8 ne I9
 G9 lt 9
 G9 ne H9
 G9 ne I9
+G9 ne H7
+G9 ne H8
+G9 ne I7
+G9 ne I8
 G9 eq 6
 H1 lt 9
 H1 ne H2
@@ -757,6 +829,7 @@ H2 ne H7
 H2 ne H8
 H2 ne H9
 H2 ne I2
+H2 ne I1
 H2 ne I3
 H2 eq 4
 H3 lt 9
@@ -767,6 +840,8 @@ H3 ne H7
 H3 ne H8
 H3 ne H9
 H3 ne I3
+H3 ne I1
+H3 ne I2
 H3 eq 1
 H4 lt 9
 H4 ne H5
@@ -783,12 +858,15 @@ H5 ne H7
 H5 ne H8
 H5 ne H9
 H5 ne I5
+H5 ne I4
 H5 ne I6
 H6 lt 9
 H6 ne H7
 H6 ne H8
 H6 ne H9
 H6 ne I6
+H6 ne I4
+H6 ne I5
 H7 lt 9
 H7 ne H8
 H7 ne H9
@@ -799,9 +877,12 @@ H7 eq 8
 H8 lt 9
 H8 ne H9
 H8 ne I8
+H8 ne I7
 H8 ne I9
 H9 lt 9
 H9 ne I9
+H9 ne I7
+H9 ne I8
 H9 eq 0
 I1 lt 9
 I1 ne I2

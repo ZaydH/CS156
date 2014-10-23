@@ -388,6 +388,7 @@ A11 ne C12
 A11 ne D9
 A11 ne D10
 A11 ne D12
+A11 eq 15
 A12 lt 16
 A12 ne A13
 A12 ne A14
@@ -1048,6 +1049,7 @@ C2 ne P2
 C2 ne D1
 C2 ne D3
 C2 ne D4
+C2 eq 15
 C3 lt 16
 C3 ne C4
 C3 ne C5
@@ -3168,6 +3170,7 @@ H15 ne M15
 H15 ne N15
 H15 ne O15
 H15 ne P15
+H15 eq 15
 H16 lt 16
 H16 ne I16
 H16 ne J16
@@ -3681,6 +3684,7 @@ J4 ne K3
 J4 ne L1
 J4 ne L2
 J4 ne L3
+J4 eq 15
 J5 lt 16
 J5 ne J6
 J5 ne J7
@@ -4383,6 +4387,7 @@ L16 ne M16
 L16 ne N16
 L16 ne O16
 L16 ne P16
+L16 eq 15
 M1 lt 16
 M1 ne M2
 M1 ne M3
@@ -4411,6 +4416,7 @@ M1 ne O4
 M1 ne P2
 M1 ne P3
 M1 ne P4
+M1 eq 15
 M2 lt 16
 M2 ne M3
 M2 ne M4
@@ -5323,6 +5329,7 @@ P13 lt 16
 P13 ne P14
 P13 ne P15
 P13 ne P16
+P13 eq 15
 P14 lt 16
 P14 ne P15
 P14 ne P16

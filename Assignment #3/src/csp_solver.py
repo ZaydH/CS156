@@ -785,14 +785,14 @@ class CSP:
 
         :returns: bool - True if Assignment is complete. False otherwise.
         '''
-        complete_assn = True  # By default assignment is complete.
-        for var in self._variables:
-            # Check if the variable is unassigned
-            if(self._variables[var].is_unassigned()):
-                # Assignment not complete since var is unassigned
-                complete_assn = False
-                break
-        return complete_assn
+#         complete_assn = True  # By default assignment is complete.
+#         for var in self._variables:
+#             # Check if the variable is unassigned
+#             if(self._variables[var].is_unassigned()):
+#                 # Assignment not complete since var is unassigned
+#                 complete_assn = False
+#                 break
+        return len(self._assignment) == len(self._variables)
 
     def select_unassigned_variable(self):
         '''
@@ -832,7 +832,9 @@ class CSP:
                         fail_first_variable = var
                         minimum_domain_size = var_domain_size
                         best_var_degree = var_out_degree
-                    
+        
+        if(len(fail_first_variable._domain) > 1):
+            x=1
 
         # Verify a valid variable was selected.
         if(fail_first_variable is None):
@@ -853,6 +855,9 @@ class CSP:
 
         # Iterate through all domain variables.
         variable_domain = variable.get_domain()
+        # on a domain of length one, no need to do any ordering.
+        if(len(variable_domain) == 1): 
+            return variable_domain
         # Get a list of the names of neighbors
         neighbor_names = variable.get_neighbors()
         # Iterate through all domain variables and determine the resulting
@@ -920,7 +925,8 @@ class CSP:
                 continue
 
             # Get the list of values to remove from the neighbor's domain
-            val_to_remove = variable.get_neighbor_inconsistent_values(value,
+            val_to_remove = variable.get_neighbor_inconsistent_values(self._assignment,
+                                                                      value,
                                                                       neighbor)
 
             # If the set of values to remove is empty, then go to next neighbor

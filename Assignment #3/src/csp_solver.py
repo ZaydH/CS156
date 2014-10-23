@@ -447,9 +447,17 @@ class CSPVariable:
         :param int value: Value to be assigned to the implicit variable.
         :param CSPVariable neighbor: Neighbor value whose domain is checked
 
-        :returns: int Number of elements removed from the neighbor's domain
+        :returns: int Number of elements removed from the neighbor's domain.  
+        If the neighbors domain is emptied (i.e. no remaining entries in the
+        domain), it returns maxint.
         '''
-        return len(self.get_neighbor_inconsistent_values(assignment, value, neighbor))
+        size_reduction = len(self.get_neighbor_inconsistent_values(assignment, 
+                                                                   value, 
+                                                                   neighbor))
+        if(size_reduction == len(neighbor._domain)):
+            return sys.maxint
+        else:
+            return size_reduction
 
     def get_neighbor_inconsistent_values(self, assignment, value, neighbor):
         '''
@@ -496,9 +504,9 @@ class CSPVariable:
                 
                 # If the constraints are not satisfied, then exclude this value.
                 if(neighbor_first_in_constraint and
-                   not constraint.check_satisfaction(other_value, neighbor_val)) \
+                   not constraint.check_satisfaction(neighbor_val, other_value)) \
                    or (not neighbor_first_in_constraint and
-                       not constraint.check_satisfaction(neighbor_val, other_value)):
+                       not constraint.check_satisfaction(other_value, neighbor_val)):
                         # if it is not satisfied, either update the reduction
                         # counter or mark the variable for removal
                         removed_neighbor_values.append(neighbor_val)
@@ -835,6 +843,7 @@ class CSP:
         
         if(len(fail_first_variable._domain) > 1):
             x=1
+            x=x+1
 
         # Verify a valid variable was selected.
         if(fail_first_variable is None):
@@ -876,6 +885,9 @@ class CSP:
                                                                       d_i,
                                                                       neighbor)
                 domain_reduction += element_count
+                
+            if(not variable._check_assignment_consistent(self._assignment, d_i)):
+                domain_reduction = sys.maxint               
 
             # Append the domain value to the list as a tuple which includes
             # the value and the total domain reduction.

@@ -840,10 +840,10 @@ class CSP:
                         fail_first_variable = var
                         minimum_domain_size = var_domain_size
                         best_var_degree = var_out_degree
-        
-        if(len(fail_first_variable._domain) > 1):
-            x=1
-            x=x+1
+#         
+#         if(len(fail_first_variable._domain) > 1):
+#             x=1
+#             x=x+1
 
         # Verify a valid variable was selected.
         if(fail_first_variable is None):

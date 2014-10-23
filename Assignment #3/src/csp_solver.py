@@ -435,7 +435,7 @@ class CSPVariable:
         # Return the list of neighbors
         return neighbors
 
-    def get_neighbor_reduction_count(self, assignment, value, neighbor):
+    def get_neighbor_domain_reduction(self, assignment, value, neighbor):
         '''
         Neighbor Domain Reduction Count Checker
 
@@ -447,19 +447,18 @@ class CSPVariable:
         :param int value: Value to be assigned to the implicit variable.
         :param CSPVariable neighbor: Neighbor value whose domain is checked
 
-        :returns: int Number of elements removed from the neighbor's domain.  
+        :returns: int Number of elements removed from the neighbor's domain.
         If the neighbors domain is emptied (i.e. no remaining entries in the
         domain), it returns maxint.
         '''
-        size_reduction = len(self.get_neighbor_inconsistent_values(assignment, 
-                                                                   value, 
-                                                                   neighbor))
+        size_reduction = len(self.get_illegal_neighbor_vals(assignment,
+                                                            value, neighbor))
         if(size_reduction == len(neighbor._domain)):
             return sys.maxint
         else:
             return size_reduction
 
-    def get_neighbor_inconsistent_values(self, assignment, value, neighbor):
+    def get_illegal_neighbor_vals(self, assignment, value, neighbor):
         '''
         Neighbor Domain Reduction Generator
 
@@ -483,30 +482,31 @@ class CSPVariable:
             for constraint in neighbor._binary_constraints:
                 # Get the variables in the constraint.
                 constraint_vars = constraint.get_variables()
-                
-                # Get the name of the variables 
+
+                # Get the name of the variables
                 if(neighbor.name == constraint_vars[0]):
                     other_variable_name = constraint_vars[1]
-                    neighbor_first_in_constraint = True 
+                    neighbor_first_in_constraint = True
                 else:
                     other_variable_name = constraint_vars[0]
                     neighbor_first_in_constraint = False
-                
+
                 # If the other value is this value, get its value
                 if(other_variable_name == self.name):
-                    other_value = value
+                    other_val = value
                 # If the value is already assigned, then get the assigned value
                 elif(other_variable_name in assignment):
-                    other_value = assignment[other_variable_name]
+                    other_val = assignment[other_variable_name]
                 # Otherwise, go to the next constraint.
                 else:
                     continue
-                
-                # If the constraints are not satisfied, then exclude this value.
-                if(neighbor_first_in_constraint and
-                   not constraint.check_satisfaction(neighbor_val, other_value)) \
-                   or (not neighbor_first_in_constraint and
-                       not constraint.check_satisfaction(other_value, neighbor_val)):
+
+                # If the constraints are not satisfied, then exclude this value
+                if(neighbor_first_in_constraint
+                   and not constraint.check_satisfaction(neighbor_val, other_val)) \
+                    or (not neighbor_first_in_constraint and
+                        not constraint.check_satisfaction(other_val,
+                                                          neighbor_val)):
                         # if it is not satisfied, either update the reduction
                         # counter or mark the variable for removal
                         removed_neighbor_values.append(neighbor_val)
@@ -564,17 +564,7 @@ class CSPVariable:
         :param int domain_values_to_restore: Values to be restored in the
         variable's domain.
         '''
-#         # Iterate through the list of variables to restore
-#         for val_to_restore in domain_values_to_restore:
-# 
-#             # Sanity error checking.
-#             if(val_to_restore in self._domain):
-#                 raise RuntimeError("Error: Trying to restore a domain value "
-#                                    + "that already exists. Exiting...")
-# 
-#             # Remove the value
-#             self._domain.append(val_to_restore)
-
+        # Concatenate the two lists.
         self._domain += domain_values_to_restore
 
         # For debug clarity sort it after restoration.
@@ -820,7 +810,7 @@ class CSP:
         # Find the variable with the smallest domain
         for var_name in self._variables:
             var = self._variables[var_name]
-            
+
             # Variable must not already be unassigned
             # And the domain size must be smaller than current min
             if(var.is_unassigned()):
@@ -830,7 +820,7 @@ class CSP:
                     fail_first_variable = var
                     minimum_domain_size = var_domain_size
                     best_var_degree = var.get_degree(self._assignment)
-                    
+
                 # If the domains are the same size, then use the degree
                 # heuristic to break the tie.
                 elif(var_domain_size == minimum_domain_size):
@@ -840,10 +830,6 @@ class CSP:
                         fail_first_variable = var
                         minimum_domain_size = var_domain_size
                         best_var_degree = var_out_degree
-#         
-#         if(len(fail_first_variable._domain) > 1):
-#             x=1
-#             x=x+1
 
         # Verify a valid variable was selected.
         if(fail_first_variable is None):
@@ -851,9 +837,12 @@ class CSP:
 
         return fail_first_variable
 
-    def order_domain_variables(self, variable):
+    def order_domain_variables(self, var):
         '''
         Backtrack Domain Variable Sorter
+
+        :param CSPVariable var: Reference variable whose domain will be
+        examined.
 
         :returns: int List of domain variables with values most likely to
         succeed in search first.
@@ -863,12 +852,12 @@ class CSP:
         constraining_val_list = []
 
         # Iterate through all domain variables.
-        variable_domain = variable.get_domain()
+        variable_domain = var.get_domain()
         # on a domain of length one, no need to do any ordering.
-        if(len(variable_domain) == 1): 
+        if(len(variable_domain) == 1):
             return variable_domain
         # Get a list of the names of neighbors
-        neighbor_names = variable.get_neighbors()
+        neighbor_names = var.get_neighbors()
         # Iterate through all domain variables and determine the resulting
         # reduction in the domain of other variables.
         for d_i in variable_domain:
@@ -881,13 +870,14 @@ class CSP:
                 if(not neighbor.is_unassigned()):
                     continue
                 # Get the reduction of the neighbor's domain with this assn.
-                element_count = variable.get_neighbor_reduction_count(self._assignment,
-                                                                      d_i,
-                                                                      neighbor)
+                assn = self._assignment
+                element_count = var.get_neighbor_domain_reduction(assn,
+                                                                  d_i,
+                                                                  neighbor)
                 domain_reduction += element_count
-                
-            if(not variable._check_assignment_consistent(self._assignment, d_i)):
-                domain_reduction = sys.maxint               
+
+            if(not var._check_assignment_consistent(self._assignment, d_i)):
+                domain_reduction = sys.maxint
 
             # Append the domain value to the list as a tuple which includes
             # the value and the total domain reduction.
@@ -905,15 +895,15 @@ class CSP:
         # Output the list.
         return output_list
 
-    def inference(self, variable, value):
+    def inference(self, var, value):
         '''
         Arc Consistency Inference Algorithm
 
         This function generates an associative array of variable values
         to be removed given the assignment of "value" to the variable
-        "variable".
+        "var".
 
-        :param: CSPVariable variable: Variable to be assigned a value
+        :param: CSPVariable var: Variable to be assigned a value
         :param: int value: Value to be assigned to parameter "variable".
 
         :returns: Dictionary of values to be removed for the unassigned
@@ -927,7 +917,7 @@ class CSP:
             return inferences
 
         # Get a list of the variables neighbors
-        neighbor_names = variable.get_neighbors()
+        neighbor_names = var.get_neighbors()
         # Iterate through the neighbors
         for neighbor_name in neighbor_names:
             # Get the neighbor variable
@@ -937,9 +927,8 @@ class CSP:
                 continue
 
             # Get the list of values to remove from the neighbor's domain
-            val_to_remove = variable.get_neighbor_inconsistent_values(self._assignment,
-                                                                      value,
-                                                                      neighbor)
+            val_to_remove = var.get_illegal_neighbor_vals(self._assignment,
+                                                          value, neighbor)
 
             # If the set of values to remove is empty, then go to next neighbor
             if(len(val_to_remove) == 0):

@@ -38,7 +38,7 @@ def pretty_print_CNF(input_string):
         else:
             output_str += "&(" + clause + ")"
 
-    return output_str
+    return str(output_str)
 
 
 def calculate_minimax(V, output, is_min):
@@ -132,7 +132,7 @@ file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
 
 # Print the output
 for b in xrange(0, 3):
-    cnf_string = pretty_print_CNF(str(to_cnf(level1[b])))
+    cnf_string = pretty_print_CNF(str(to_cnf(level1[1][b])))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
 

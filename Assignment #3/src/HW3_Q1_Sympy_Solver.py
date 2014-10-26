@@ -128,11 +128,18 @@ output = []
 calculate_minimax(level1, output, is_min)
 file_and_console_print("Done")
 
-file_and_console_print("\n\n\n\nConverting to CNF...")
+file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
+
 # Print the output
 for b in xrange(0, 3):
-    cnf_string = pretty_print(to_cnf(output[b]))
-    file_and_console_print("\n\n\n\n\nV%d=" % (b))
+    cnf_string = pretty_print_CNF(str(to_cnf(level1[b])))
+    file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
+
+# # Print the output
+# for b in xrange(0, 3):
+#     cnf_string = pretty_print_CNF(to_cnf(output[b]))
+#     file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
+#     file_and_console_print(cnf_string)
 
 file_out.close()

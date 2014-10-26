@@ -1,0 +1,7 @@
+a lt b
+b gt c
+b lt d
+d gt a
+e eq 10
+a ne c
+a gt 0

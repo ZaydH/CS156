@@ -82,4 +82,4 @@ I9=2
 
 There were 136 calls to "backtrack".
 The variables were reset 143 times.
-The elapsed time is 0.110s.
+The elapsed time is 0.120s.

@@ -17,4 +17,4 @@ D4=0
 
 There were 16 calls to "backtrack".
 The variables were reset 16 times.
-The elapsed time is 0.000s.
+The elapsed time is 0.002s.

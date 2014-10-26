@@ -38,70 +38,71 @@ def pretty_print_CNF(input_string):
     return output_str
 
 
+def calculate_minimax(V, output, is_min):
+    for b in xrange(0, 3):
+        # Set the starting value of the function
+        bool_func = is_min
+        if(is_min):
+            op = And
+        else:
+            op = Or
+        # Iterate through all tree children.
+        for i in xrange(0, 3):
+            # Set the starting value of the clause
+            clause = True
+            # Concatenate previous bits.
+            for prev_b in xrange(0, b):
+                # Build the previous bits
+                clause = And(clause,
+                             Equivalent(V[prev_b], V[i][prev_b]))
+            # Build the clause
+            clause = And(clause, V[i][b])
+            # Append this clause
+            bool_func = op(bool_func, clause)
+        # Save the boolean function.
+        output.append(bool_func)
+
+
 # Base Variables
 V = []
-V.append([])  # Add a dummy place holder to make it easier for reading
 # Create the array of symbols and concatenate a dummy placeholder.
-for i in xrange(1, 4):
+for i in xrange(0, 3):
     # Actual storage for this var
     V.append([])
-    # Add a dummy placeholder
-    V[i].append([])
-    for j in xrange(1, 4):
-        # Actual storage for this var
+    for j in xrange(0, 3):
         V[i].append([])
-        # Dummy placeholder
-        V[i][j].append([])
-        for k in xrange(1, 4):
-            # Actual storage for this var
+        for k in xrange(0, 3):
             V[i][j].append([])
-            # Dummy placeholder
-            V[i][j][k].append([])
-            for m in xrange(1, 4):
-                # Actual storage for this var
+            for m in xrange(0, 3):
                 V[i][j][k].append([])
-                # Dummy placeholder
-                V[i][j][k][m].append([])
-                for b in xrange(1, 4):
-                    V[i][j][k][m][b] = Symbol('V'+str(i)+","
-                                              + str(j) + ","
-                                              + str(k) + ","
-                                              + str(m) + ","
-                                              + str(b))
-
-is_min = True
-for i in xrange(1, 4):
-    # Actual storage for this var
-    V.append([])
-    # Add a dummy placeholder
-    V[i].append([])
-    for j in xrange(1, 4):
-        # Actual storage for this var
-        V[i].append([])
-        # Dummy placeholder
-        V[i][j].append([])
-        for k in xrange(1, 4):
-            # Actual storage for this var
-            V[i][j].append([])
-            # Dummy placeholder
-            V[i][j][k].append([])
-            for m in xrange(1, 4):
-                # Actual storage for this var
-                V[i][j][k].append([])
-                # Dummy placeholder
-                V[i][j][k][m].append([])
-                for b in xrange(1, 4):
-                    # Switch to max.
-                    is_min = not is_min
+                for b in xrange(0, 3):
+                    name = 'V'+str(i+1)+"," + str(j+1) \
+                           + "," + str(k+1) + "," \
+                           + str(m+1) + "," + str(b+1)
+                    V[i][j][k][m].append(Symbol(name))
 
 
+output = []
+for b in xrange(0, 3):
+    level1 = []
+    for i in xrange(0, 3):
+        level1.append([])
+        level2 = []
+        for j in xrange(0, 3):
+            level2.append([])
+            level3 = []
+            for k in xrange(0, 3):
+                level3.append([])
+                # Perform the bit manipulations one level up.
+                is_min = True
+                calculate_minimax(V[i][j][k], level3[k], is_min)
+            # Perform the bit manipulations at the third level.
+            is_min = not is_min
+            calculate_minimax(level3[j], level2[j], is_min)
+        # Perform the bit manipulations at the second level.
+        is_min = not is_min
+        calculate_minimax(level2[i], level1[i], is_min)
+    # Perform the bit manipulations at the top level.
+    is_min = not is_min
+    calculate_minimax(level1, Output, is_min)
 
-def calculate_minimax(V, loc, is_min):
-
-    for b in xrange(1, 4):
-
-        for i in xrange(1,4):
-            # Set the starting value of the function
-            bool_func = is_min
-    
-            bool_func = 

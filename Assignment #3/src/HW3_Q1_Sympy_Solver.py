@@ -134,7 +134,7 @@ file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
 
 # Print the output
 for b in xrange(0, 3):
-    cnf_string = pretty_print_CNF(str(to_cnf(level1[1][b], False)))
+    cnf_string = pretty_print_CNF(str(to_cnf(level1[0][b], False)))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
 

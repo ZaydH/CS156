@@ -4,25 +4,38 @@ Created on Oct 25, 2014
 @author: Zayd
 '''
 
-from sympy import *
+# Import the necessary Sympy Libraries for conversion to CNF
+from sympy import And, Or, Not, to_cnf
 from sympy.core.symbol import Symbol
+# Use the MutableString class which is similar to the Java
+# StringBuffer/StringBuilder classes.
 from UserString import MutableString
 
 
+# Define the output file and open the output stream.
 global file_out
+file_out = open("HW3_Q1_Results.txt", "w")
 
 
 def pretty_print_CNF(input_string):
+    """
+    SymPy returns the CNF information in a form that is
+    more line with its implementation that what is easily readable
+    Modify the string to make it more readable in text.
+
+    :returns: Converted CNF string.
+    """
     output_str = MutableString()
+    input_string_mutable = MutableString(input_string)
     # Remove nots and white space.
-    input_string = input_string.replace("Not", "!")
-    input_string = input_string.replace(" ", "")
+    input_string_mutable = input_string_mutable.replace("Not", "!")
+    input_string_mutable = input_string_mutable.replace(" ", "")
     # Remove outer "And"
-    input_string = input_string.replace("And(", "")
+    input_string_mutable = input_string_mutable.replace("And(", "")
     # Remove trailing parenthesis
-    input_string = input_string[:len(input_string)-1]
+    input_string_mutable = input_string_mutable[:len(input_string_mutable)-1]
     # Split based off OR
-    all_clauses = input_string.split("),Or(")
+    all_clauses = input_string_mutable.split("),Or(")
     for clause in all_clauses:
         # Remove any preceding ors
         clause = clause.replace("Or(", "")
@@ -44,7 +57,19 @@ def pretty_print_CNF(input_string):
 
 
 def calculate_minimax(V, output, is_min):
+    """
+    This function builds the minimax tree.  It takes V which is the variables
+    in the previous level of the tree (this is in terms of Vi,j,k,m,b) and
+    then outputs the next level of the tree into output.  User can select
+    whether they want to do min or max manipulation.
 
+    :param Symbol V: List of positional SymPy symbols.
+    :param Symbol output: List of the minimax bit values for the previous level
+    :param bool is_min: Boolean flag whether to treat the operation as a min
+    operation of a max operation.
+
+    :returns: None
+    """
     # Determine the function for min/max
     if(is_min):
         op = And
@@ -73,21 +98,31 @@ def calculate_minimax(V, output, is_min):
         output.append(bool_func)
 
 
-def file_and_console_print(string, include_new_line=True):
+def file_and_console_print(print_string, include_new_line=True):
+    """
+    This function takes a string and prints to the console and
+    writes it to the output file.
+
+    :param str print_string: String to be printed.
+    :param bool include_new_line: Boolean flag whether to append
+    a new line at the end of the string.  Default is True.
+
+    :returns: None
+    """
     if(include_new_line):
-        print string
-        file_out.write(string + "\n")
+        print print_string
+        file_out.write(print_string + "\n")
     else:
-        print string,
-        file_out.write(string)
+        print print_string,
+        file_out.write(print_string)
 
-file_out = open("HW3_Q1_Results.txt", "w")
 
+# Define all propositional symbols V_(i,j,k,m,b) and build
+# These symbols will be used in the CNF representations.
 file_and_console_print("Defining Base Variables...", False)
-# Base Variables
 V = []
-# Create the array of symbols and concatenate a dummy placeholder.
-for i in xrange(0, 3):
+# for i in xrange(0, 3):
+for i in xrange(0, 1):  # Simplified to 1 to reduce extension time
     # Actual storage for this var
     V.append([])
     for j in xrange(0, 3):
@@ -103,15 +138,20 @@ for i in xrange(0, 3):
                     V[i][j][k][m].append(Symbol(name))
 file_and_console_print("Done")
 
-file_and_console_print("\n\n\nBuilding Minimax Dependencies...", False)
 # Build the tree of related variables.
+file_and_console_print("\n\n\nBuilding Minimax Dependencies...", False)
 level1 = []
-for i in xrange(0, 3):
+# for i in xrange(0, 3):
+for i in xrange(0, 1):  # Simplified to 1 to reduce extension time
     level1.append([])
     level2 = []
+    # Build the minimax variables for level 2
+    # These variables will be used to generate variable in level 1
     for j in xrange(0, 3):
         level2.append([])
         level3 = []
+        # Build the minimax variables for level 3
+        # These variables will be used to generate variable in level 2
         for k in xrange(0, 3):
             level3.append([])
             # Perform the bit manipulations one level up.
@@ -124,26 +164,22 @@ for i in xrange(0, 3):
     is_min = not is_min
     calculate_minimax(level2, level1[i], is_min)
 
-# Perform the bit manipulations at the top level.
-is_min = not is_min
-output = []
-calculate_minimax(level1, output, is_min)
-file_and_console_print("Done")
+# To get the top of level of the tree, change xrange of i to 3 from 1.
+# # Perform the bit manipulations at the top level (#0)
+# is_min = not is_min
+# level0_root = []
+# calculate_minimax(level1, level0_root, is_min)
+# file_and_console_print("Done")
 
+# Print the CNF for move 1 in level 1 (i.e. bits V1,b).
 file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
-
-# Print the output
 for b in xrange(0, 3):
     temp_expression = to_cnf(level1[0][b], False)
-    temp_expression = to_cnf(temp_expression, True)
+    temp_expression = to_cnf(temp_expression, False)
     cnf_string = pretty_print_CNF(str(temp_expression))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
 
-# # Print the output
-# for b in xrange(0, 3):
-#     cnf_string = pretty_print_CNF(to_cnf(output[b]))
-#     file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
-#     file_and_console_print(cnf_string)
-
+# Indicate on the console the operation is complete.
 file_out.close()
+file_and_console_print("\n\n\n\nConverting to CNF for V1,b...Done")

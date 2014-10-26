@@ -112,6 +112,10 @@ class CNF:
         # store the length of the string.
         self.bool_func = self.bool_func[1:len(self.bool_func) - 1]
 
+    def add_outer_parenthesis(self):
+        # store the length of the string.
+        self.bool_func = ["("] + self.bool_func + [")"]
+
     def getFirstOperator(self):
         """
 
@@ -153,13 +157,13 @@ class CNF:
         return None
 
     @staticmethod
-    def merge_two_cnf(cnf1, op, cnf2):
+    def merge_two_funcs(cnf1, op, cnf2):
         """
         >>> a_plus_b = CNF("(a+b)")
         >>> c_plus_d = CNF("(c+d)")
-        >>> CNF.merge_two_cnf(a_plus_b, '+', c_plus_d)
+        >>> CNF.merge_two_funcs(a_plus_b, '+', c_plus_d)
         ['(', 'a', '+', 'b', ')', '+', '(', 'c', '+', 'd', ')']
-        >>> CNF.merge_two_cnf(a_plus_b, '&', c_plus_d)
+        >>> CNF.merge_two_funcs(a_plus_b, '&', c_plus_d)
         ['(', 'a', '+', 'b', ')', '&', '(', 'c', '+', 'd', ')']
         """
         if(op != CNF.AND_OP and op != CNF.OR_OP):
@@ -175,33 +179,33 @@ class CNF:
         else:
             return new_cnf.bool_func
 
-        def split_on_binary_operator(self, operator_loc=-1):
-            """
-            >>> merged_clause = CNF("(a+b)&(c+d)")
-            >>> merged_clause.split_on_binary_operator()
-            (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
-            >>> merged_clause = CNF("(a+b)&(c+d)")
-            >>> merged_clause.split_on_binary_operator(5)
-            (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
-            """
-            # If no operate location is specified, then find it.
-            if(operator_loc == -1):
-                first_operator = self.getOperator()
-                operator_loc = first_operator[1]
+    def split_on_binary_operator(self, operator_loc=-1):
+        """
+        >>> merged_clause = CNF("(a+b)&(c+d)")
+        >>> merged_clause.split_on_binary_operator()
+        (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
+        >>> merged_clause = CNF("(a+b)&(c+d)")
+        >>> merged_clause.split_on_binary_operator(5)
+        (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
+        """
+        # If no operate location is specified, then find it.
+        if(operator_loc == -1):
+            first_operator = self.getFirstOperator()
+            operator_loc = first_operator[1]
 
-            # Create the new clauses.
-            left_clause = CNF("")
-            right_clause = CNF("")
+        # Create the new clauses.
+        left_clause = CNF("")
+        right_clause = CNF("")
 
-            # Get the left clause.
-            left_clause.bool_func = list(self.bool_func[:operator_loc])
-            right_clause.bool_func = list(self.bool_func[operator_loc+1:])
+        # Get the left clause.
+        left_clause.bool_func = list(self.bool_func[:operator_loc])
+        right_clause.bool_func = list(self.bool_func[operator_loc+1:])
 
-            # Return the split clauses.
-            if(not is_doctest):
-                return (left_clause, right_clause)
-            else:
-                return (left_clause.bool_func, right_clause.bool_func)
+        # Return the split clauses.
+        if(not is_doctest):
+            return (left_clause, right_clause)
+        else:
+            return (left_clause.bool_func, right_clause.bool_func)
 
     def derive_cnf(self):
 
@@ -217,7 +221,7 @@ class CNF:
             return self.derive_cnf()
 
         # Get the first operator.
-        first_operator = self.getOperator()
+        first_operator = self.getFirstOperator()
         cur_op = first_operator[0]
         op_loc = first_operator[1]
 
@@ -240,15 +244,17 @@ class CNF:
         # Get a tuple of the next operator and its location.
         if(cur_op == "&"):
             # Determine if you need to add parenthesis
-            left_statement = left_cnf.to_string()
-            if(not left_cnf.is_atomic() and not left_cnf.has_parenthesis()):
-                left_statement = "(" + left_statement + ")"
-            right_statement = right_cnf.to_string()
-            if(not right_cnf.is_atomic() and not right_cnf.has_parenthesis()):
-                right_statement = "(" + right_statement + ")"
+            # If they are not there, add them.
+            if(not left_cnf.has_parenthesis()
+               and not left_cnf.is_single_variable()):
+                left_cnf.add_outer_parenthesis()
+
+            if(not right_cnf.has_parenthesis()
+               and not right_cnf.is_single_variable()):
+                right_cnf.add_outer_parenthesis()
             # Return the CNF
-            return CNF(left_statement + "&" + right_statement)
-        
+            return CNF.merge_two_funcs(left_cnf, "&", right_cnf)
+
         # Handle the case of or.
         if(cur_op == "+"):
 #  

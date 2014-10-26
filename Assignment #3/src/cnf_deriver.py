@@ -117,6 +117,10 @@ class CNF:
         self.bool_func = ["("] + self.bool_func + [")"]
 
     def getFirstOperator(self):
+        operator_and_location = self.getFirstOperatorAndLocation()
+        return operator_and_location[0]
+
+    def getFirstOperatorAndLocation(self):
         """
 
         >>> a_plus_b = CNF("a+b")
@@ -257,56 +261,8 @@ class CNF:
 
         # Handle the case of or.
         if(cur_op == "+"):
-#  
-#     34     if (_op == BOP.OR)
-#     35     {
-#     36         if (( cnfLeft == null || cnfLeft.IsAtomic() || cnfLeft.Op == BOP.OR)
-#     37             && (cnfRight == null || cnfRight.IsAtomic() || cnfRight.Op == BOP.OR))
-#     38         //   +
-#     39         // +   +
-#     40         {
-#     41             return new BoolExpr(BOP.OR, cnfLeft, cnfRight);
-#     42         }
-#     43         else if ((cnfLeft != null && cnfLeft.Op == BOP.AND)
-#     44                 && (cnfRight == null || cnfRight.IsAtomic() || cnfRight.Op == BOP.OR))
-#     45         //   +
-#     46         // *   +
-#     47         {
-#     48             BoolExpr newLeft = new BoolExpr(BOP.OR, cnfLeft.Left, cnfRight);
-#     49             BoolExpr newRight = new BoolExpr(BOP.OR, cnfLeft.Right, cnfRight);
-#     50 
-#     51             return new BoolExpr(BOP.AND, newLeft.ToCNF(), newRight.ToCNF());
-#     52         }
-#     53         else if ((cnfRight != null && cnfRight.Op == BOP.AND)
-#     54                 && (cnfLeft == null || cnfLeft.IsAtomic() || cnfLeft.Op == BOP.OR))
-#     55         //   +
-#     56         // +   *
-#     57         {
-#     58             BoolExpr newLeft = new BoolExpr(BOP.OR, cnfLeft, cnfRight.Right);
-#     59             BoolExpr newRight = new BoolExpr(BOP.OR, cnfLeft, cnfRight.Left);
-#     60 
-#     61             return new BoolExpr(BOP.AND, newLeft.ToCNF(), newRight.ToCNF());
-#     62         }
-#     63         else if ((cnfLeft != null && cnfLeft.Op == BOP.AND)
-#     64                 && (cnfRight != null && cnfRight.Op == BOP.AND))
-#     65         //   +
-#     66         // *   *
-#     67         {
-#     68             BoolExpr newLeft = new BoolExpr(BOP.AND,
-#     69                 new BoolExpr(BOP.OR, cnfLeft.Left, cnfRight.Left),
-#     70                 new BoolExpr(BOP.OR, cnfLeft.Right, cnfRight.Left));
-#     71 
-#     72             BoolExpr newRight = new BoolExpr(BOP.AND,
-#     73                 new BoolExpr(BOP.OR, cnfLeft.Left, cnfRight.Right),
-#     74                 new BoolExpr(BOP.OR, cnfLeft.Right, cnfRight.Right));
-#     75 
-#     76             return new BoolExpr(BOP.AND, newLeft.ToCNF(), newRight.ToCNF());
-#     77         }
-#     78     }
+            if(left_cnf.is_single_variable())
 
-            # Handle the case where an an error occurred.
-            print ("Error Generating CNF. Exiting...")
-            sys.exit(0)
 
 if(__name__ == '__main__'):
     import doctest

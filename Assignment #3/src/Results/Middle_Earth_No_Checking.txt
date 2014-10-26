@@ -1,0 +1,7 @@
+ME=0 
+Shortz=2 
+Uland=1 
+
+There were 3 calls to "backtrack".
+The variables were reset 3 times.
+The elapsed time is 0.000s.

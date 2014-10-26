@@ -1,0 +1,11 @@
+NSW=2 
+NT=2 
+Q=1 
+SA=0 
+T=0 
+V=1 
+WA=1 
+
+There were 7 calls to "backtrack".
+The variables were reset 7 times.
+The elapsed time is 0.000s.

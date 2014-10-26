@@ -12,11 +12,7 @@ from sympy.core.symbol import Symbol
 from UserString import MutableString
 
 
-# Define the output file and open the output stream.
-global file_out
-file_out = open("HW3_Q1_Results.txt", "w")
-
-# This glage sets whether to solve all the way to the tree root
+# This flag sets whether to solve all the way to the tree root
 # or to stop at level 1 as described in the question.
 solve_to_tree_root = False
 if(solve_to_tree_root):
@@ -117,12 +113,14 @@ def file_and_console_print(print_string, include_new_line=True):
 
     :returns: None
     """
+    file_out = open("HW3_Q1_Results.txt", "a")
     if(include_new_line):
         print print_string
         file_out.write(print_string + "\n")
     else:
         print print_string,
         file_out.write(print_string)
+    file_out.close()
 
 
 # Define all propositional symbols V_(i,j,k,m,b) and build
@@ -177,20 +175,40 @@ if(solve_to_tree_root):
     calculate_minimax(level1, level0_root, is_min)
     file_and_console_print("Done")
 
-# Print the CNF for move 1 in level 1 (i.e. bits V1,b).
-file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
+
+# Print the expression for move 1 in level 1 (i.e. bits V1,b).
+# This is NOT in CNF form.
 for b in xrange(0, 3):
+    file_and_console_print("\n\n\n\nPrinting V1,%d in non-CNF Form" % (b+1))
+    non_cnf_string = pretty_print_CNF(str(level1[0][b]))
+    file_and_console_print("\nV1,%d=" % (b+1))
+    file_and_console_print(non_cnf_string)
+    file_and_console_print("Printing V1,%d in non-CNF Form...Done" % (b+1))
+
+# Print the CNF for move 1 in level 1 (i.e. bits V1,b).
+for b in xrange(0, 3):
+    file_and_console_print("\n\n\n\nConverting to CNF for V1,%d" % (b+1))
     temp_expression = to_cnf(level1[0][b], False)
     # Uncomment the line below to simplify the expression
     # temp_expression = to_cnf(temp_expression, True)
     cnf_string = pretty_print_CNF(str(temp_expression))
-    file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
+    file_and_console_print("\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
     file_and_console_print("Converting to CNF for V1,%d...Done" % (b+1))
 
+# This will print the statements all the way to the tree root.
 if(solve_to_tree_root):
+    # Print the expression for move 1 in level 1 (i.e. bits V1,b).
+    # This is NOT in CNF form.
+    for b in xrange(0, 3):
+        file_and_console_print("\n\n\n\nPrinting V%d in non-CNF Form" % (b+1))
+        non_cnf_string = pretty_print_CNF(str(level0_root[b]))
+        file_and_console_print("\nV%d=" % (b+1))
+        file_and_console_print(non_cnf_string)
+        file_and_console_print("Printing V%d in non-CNF Form...Done" % (b+1))
+
     # Print the CNF for the root (level 0) (i.e. bits Vb).
-    file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
+    file_and_console_print("\n\n\n\nConverting to CNF for V%d..." % (b+1))
     for b in xrange(0, 3):
         temp_expression = to_cnf(level0_root[b], False)
         # Uncomment the line below to simplify the expression
@@ -199,6 +217,3 @@ if(solve_to_tree_root):
         file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
         file_and_console_print(cnf_string)
         file_and_console_print("Converting to CNF for V%d...Done" % (b+1))
-
-# Indicate on the console the operation is complete.
-file_out.close()

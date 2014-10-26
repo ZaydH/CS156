@@ -16,6 +16,14 @@ from UserString import MutableString
 global file_out
 file_out = open("HW3_Q1_Results.txt", "w")
 
+# This glage sets whether to solve all the way to the tree root
+# or to stop at level 1 as described in the question.
+solve_to_tree_root = False
+if(solve_to_tree_root):
+    numb_level1_children = 3
+else:
+    numb_level1_children = 1
+
 
 def pretty_print_CNF(input_string):
     """
@@ -121,8 +129,7 @@ def file_and_console_print(print_string, include_new_line=True):
 # These symbols will be used in the CNF representations.
 file_and_console_print("Defining Base Variables...", False)
 V = []
-# for i in xrange(0, 3):
-for i in xrange(0, 1):  # Simplified to 1 to reduce extension time
+for i in xrange(0, numb_level1_children):
     # Actual storage for this var
     V.append([])
     for j in xrange(0, 3):
@@ -141,8 +148,7 @@ file_and_console_print("Done")
 # Build the tree of related variables.
 file_and_console_print("\n\n\nBuilding Minimax Dependencies...", False)
 level1 = []
-# for i in xrange(0, 3):
-for i in xrange(0, 1):  # Simplified to 1 to reduce extension time
+for i in xrange(0, numb_level1_children):
     level1.append([])
     level2 = []
     # Build the minimax variables for level 2
@@ -164,22 +170,37 @@ for i in xrange(0, 1):  # Simplified to 1 to reduce extension time
     is_min = not is_min
     calculate_minimax(level2, level1[i], is_min)
 
-# To get the top of level of the tree, change xrange of i to 3 from 1.
-# # Perform the bit manipulations at the top level (#0)
-# is_min = not is_min
-# level0_root = []
-# calculate_minimax(level1, level0_root, is_min)
-# file_and_console_print("Done")
+if(solve_to_tree_root):
+    # Perform the bit manipulations at the top level (#0)
+    is_min = not is_min
+    level0_root = []
+    calculate_minimax(level1, level0_root, is_min)
+    file_and_console_print("Done")
 
 # Print the CNF for move 1 in level 1 (i.e. bits V1,b).
 file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
 for b in xrange(0, 3):
     temp_expression = to_cnf(level1[0][b], False)
-    temp_expression = to_cnf(temp_expression, False)
+    # Uncomment the line below to simplify the expression
+    # temp_expression = to_cnf(temp_expression, True)
     cnf_string = pretty_print_CNF(str(temp_expression))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
+    file_and_console_print("\n\nConverting to CNF for V1,%d...Done"
+                           % (b+1))
+
+if(solve_to_tree_root):
+    # Print the CNF for the root (level 0) (i.e. bits Vb).
+    file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
+    for b in xrange(0, 3):
+        temp_expression = to_cnf(level0_root[b], False)
+        # Uncomment the line below to simplify the expression
+        # temp_expression = to_cnf(temp_expression, True)
+        cnf_string = pretty_print_CNF(str(temp_expression))
+        file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
+        file_and_console_print(cnf_string)
+        file_and_console_print("\n\nConverting to CNF for V%d...Done"
+                               % (b+1))
 
 # Indicate on the console the operation is complete.
 file_out.close()
-file_and_console_print("\n\n\n\nConverting to CNF for V1,b...Done")

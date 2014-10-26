@@ -186,8 +186,7 @@ for b in xrange(0, 3):
     cnf_string = pretty_print_CNF(str(temp_expression))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
-    file_and_console_print("\n\nConverting to CNF for V1,%d...Done"
-                           % (b+1))
+    file_and_console_print("Converting to CNF for V1,%d...Done" % (b+1))
 
 if(solve_to_tree_root):
     # Print the CNF for the root (level 0) (i.e. bits Vb).
@@ -199,8 +198,7 @@ if(solve_to_tree_root):
         cnf_string = pretty_print_CNF(str(temp_expression))
         file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
         file_and_console_print(cnf_string)
-        file_and_console_print("\n\nConverting to CNF for V%d...Done"
-                               % (b+1))
+        file_and_console_print("Converting to CNF for V%d...Done" % (b+1))
 
 # Indicate on the console the operation is complete.
 file_out.close()

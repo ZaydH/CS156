@@ -214,6 +214,6 @@ if(solve_to_tree_root):
         # Uncomment the line below to simplify the expression
         # temp_expression = to_cnf(temp_expression, True)
         cnf_string = pretty_print_CNF(str(temp_expression))
-        file_and_console_print("\n\n\n\n\nV%d=" % (b+1))
+        file_and_console_print("\nV%d=" % (b+1))
         file_and_console_print(cnf_string)
         file_and_console_print("Converting to CNF for V%d...Done" % (b+1))

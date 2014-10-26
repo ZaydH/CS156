@@ -168,7 +168,7 @@ class CNF:
         # build a new CNF
         new_cnf = CNF("")
         # Concatenate the two CNFs
-        new_cnf.bool_func = cnf1.bool_func + [op] + cnf2.bool_func
+        new_cnf.bool_func = list(cnf1.bool_func) + [op] + list(cnf2.bool_func)
         # Return the merged cnf
         if(not is_doctest):
             return new_cnf
@@ -176,13 +176,32 @@ class CNF:
             return new_cnf.bool_func
 
         def split_on_binary_operator(self, operator_loc=-1):
+            """
+            >>> merged_clause = CNF("(a+b)&(c+d)")
+            >>> merged_clause.split_on_binary_operator()
+            (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
+            >>> merged_clause = CNF("(a+b)&(c+d)")
+            >>> merged_clause.split_on_binary_operator(5)
+            (['(', 'a', '+', 'b', ')'], ['(', 'c', '+', 'd', ')'])
+            """
             # If no operate location is specified, then find it.
             if(operator_loc == -1):
                 first_operator = self.getOperator()
                 operator_loc = first_operator[1]
 
-            # Split the CNF
-            left_cnt = CNF("")
+            # Create the new clauses.
+            left_clause = CNF("")
+            right_clause = CNF("")
+
+            # Get the left clause.
+            left_clause.bool_func = list(self.bool_func[:operator_loc])
+            right_clause.bool_func = list(self.bool_func[operator_loc+1:])
+
+            # Return the split clauses.
+            if(not is_doctest):
+                return (left_clause, right_clause)
+            else:
+                return (left_clause.bool_func, right_clause.bool_func)
 
     def derive_cnf(self):
 
@@ -200,6 +219,7 @@ class CNF:
         # Get the first operator.
         first_operator = self.getOperator()
         cur_op = first_operator[0]
+        op_loc = first_operator[1]
 
         # Determine whether the first operator is a negation If so, drive it in
         if(cur_op == "~"):
@@ -213,7 +233,7 @@ class CNF:
                 return self.derive_cnf()
 
         # Derive the left and right CNF clauses.
-        split_clauses = self.split_on_binary_operator()
+        split_clauses = self.split_on_binary_operator(op_loc)
         left_cnf = split_clauses[0].derive_cnf()
         right_cnf = split_clauses[1].derive_cnf()
 

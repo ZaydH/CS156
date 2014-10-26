@@ -38,6 +38,8 @@ def pretty_print_CNF(input_string):
         else:
             output_str += "&(" + clause + ")"
 
+    # Replace period with commas
+    output_str = output_str.replace(".", ",")
     return str(output_str)
 
 
@@ -95,9 +97,9 @@ for i in xrange(0, 3):
             for m in xrange(0, 3):
                 V[i][j][k].append([])
                 for b in xrange(0, 3):
-                    name = 'V'+str(i+1)+"," + str(j+1) \
-                           + "," + str(k+1) + "," \
-                           + str(m+1) + "," + str(b+1)
+                    name = 'V'+str(i+1)+"." + str(j+1) \
+                           + "." + str(k+1) + "." \
+                           + str(m+1) + "." + str(b+1)
                     V[i][j][k][m].append(Symbol(name))
 file_and_console_print("Done")
 
@@ -132,7 +134,7 @@ file_and_console_print("\n\n\n\nConverting to CNF for V1,b...")
 
 # Print the output
 for b in xrange(0, 3):
-    cnf_string = pretty_print_CNF(str(to_cnf(level1[1][b], True)))
+    cnf_string = pretty_print_CNF(str(to_cnf(level1[1][b], False)))
     file_and_console_print("\n\n\n\n\nV1,%d=" % (b+1))
     file_and_console_print(cnf_string)
 

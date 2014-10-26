@@ -177,6 +177,9 @@ class CSPConstraint:
 
 class CSPVariable:
 
+    MAX_UNARY_CONSTRAINT_VAL = 0
+    NUMB_VARIABLES = 0
+
     def __init__(self, name):
         '''
         Constructor for the CSP Variable class.
@@ -191,6 +194,8 @@ class CSPVariable:
         self._unary_constraints = []
         self._binary_constraints = []
         self._unassigned = True
+        # Increment the number of variables
+        CSPVariable.NUMB_VARIABLES += 1
 
     def hash(self):
         '''
@@ -219,7 +224,8 @@ class CSPVariable:
         Result of this Function
         '''
         starting_value = 0
-        ending_value = sys.maxint  # Get the integer maximum
+        ending_value = max(CSPVariable.MAX_UNARY_CONSTRAINT_VAL,
+                           CSPVariable.NUMB_VARIABLES-1)  # Set the domain max
         illegal_values = []  # This represents the "ne" values.
         eq_value = -1  # A constraint can have a single "eq" value so track it
 
@@ -311,6 +317,10 @@ class CSPVariable:
         # Add it to the unary constraints
         else:
             self._unary_constraints.append(constraint)
+            constraint_val = constraint.integer_constraint
+            # Get the maximum unary constraint value.
+            if(constraint_val > CSPVariable.MAX_UNARY_CONSTRAINT_VAL):
+                CSPVariable.MAX_UNARY_CONSTRAINT_VAL = constraint_val
 
     def _check_assignment_consistent(self, assignment, value):
         '''

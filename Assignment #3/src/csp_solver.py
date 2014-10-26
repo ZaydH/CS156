@@ -177,6 +177,7 @@ class CSPConstraint:
 
 class CSPVariable:
 
+    # These two variables are used in max(D,V-1 calculations)
     MAX_UNARY_CONSTRAINT_VAL = 0
     NUMB_VARIABLES = 0
 

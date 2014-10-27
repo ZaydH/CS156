@@ -75,29 +75,35 @@ def calculate_minimax(V, output, is_min):
     :returns: None
     """
     # Determine the function for min/max
-    if(is_min):
-        op = And
-    else:
-        op = Or
-
     for b in xrange(0, 3):
         # Set the starting value of the function
         bool_func = is_min
         # Iterate through all tree children.
         for i in xrange(0, 3):
             # Set the starting value of the clause
-            clause = True
+            if(is_min):
+                clause = False
+            else:
+                clause = True
             # Concatenate previous bits.
             for prev_b in xrange(0, b):
                 # Determine bit equivalence
                 equiv = Or(And(output[prev_b], V[i][prev_b]),
                            And(Not(output[prev_b]), Not(V[i][prev_b])))
-                # Build the previous bits
-                clause = And(clause, equiv)
-            # Build the clause
-            clause = And(clause, V[i][b])
+                # Build the previous bit checks
+                if(is_min):
+                    clause = Or(clause, Not(equiv))
+                else:
+                    clause = And(clause, equiv)
+
             # Append this clause
-            bool_func = op(bool_func, clause)
+            if(is_min):
+                clause = Or(clause, V[i][b])  # Build the clause
+                bool_func = And(bool_func, clause)
+            else:
+                clause = And(clause, V[i][b])  # Build the clause
+                bool_func = Or(bool_func, clause)
+
         # Save the boolean function.
         output.append(bool_func)
 

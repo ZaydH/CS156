@@ -4,7 +4,7 @@ Created on Oct 25, 2014
 @author: Zayd
 '''
 
-from sympy import *
+from sympy import And, Or, Not, to_cnf, satisfiable
 from sympy.core.symbol import Symbol
 from UserString import MutableString
 
@@ -63,6 +63,9 @@ for pigeon in xrange(1, 5):
 part_a = And(part_a_conjuncts[0], part_a_conjuncts[1],
              part_a_conjuncts[2], part_a_conjuncts[3])
 
+print "PartA is satisfiable with the assignment:"
+print str(satisfiable(part_a)) + "\n\n\n"
+
 # Build part B.
 part_b = False
 for hole in xrange(1, 4):
@@ -72,7 +75,20 @@ for hole in xrange(1, 4):
     part_b = Or(part_b, And(P[2][hole], P[3][hole]))
     part_b = Or(part_b, And(P[2][hole], P[4][hole]))
     part_b = Or(part_b, And(P[3][hole], P[4][hole]))
+print "PartB is satisfiable with the assignment:"
+print str(satisfiable(part_b)) + "\n\n\n"
+
+# Pigeon Hole Principle
+php = And(part_a, part_b)
+if(not satisfiable(php)):
+    print "PHP is not satisfiable with the assignment.\n\n\n"
+else:
+    print "PHP is satisfiable with assignment: ",
+    print str(satisfiable(php)) + "\n\n\n"
 
 # Build the not PHP problem.
-not_php = Not(And(part_a, part_b))
-print pretty_print_CNF(str(to_cnf(not_php, True)))
+not_php = Not(php)
+print "Not PHP is in CNF is: ",
+print pretty_print_CNF(str(to_cnf(not_php))) + "\n\n\n"
+print "It is satisfiable with the assignment: "
+print str(satisfiable(not_php)) + "\n\n\n"

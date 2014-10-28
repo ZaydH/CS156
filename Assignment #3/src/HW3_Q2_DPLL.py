@@ -14,6 +14,7 @@ step_numb = 0
 def DPLL(clauses, assn, model):
 
     # Increment the step number
+    global step_numb
     step_numb += 1
     # Check for an invalid condition.
     if(has_empty_clause(clauses)):
@@ -27,7 +28,7 @@ def DPLL(clauses, assn, model):
     symbol = find_pure_symbol(clauses, assn, model)
     if(symbol is not None):
         print "Step #" + str(step_numb) + ": Symbol \"" + symbol + "\" is a pure" + \
-            "symbol. It was assigned to \"" + str(assn[symbol]) + "\"."
+            " symbol. It was assigned to \"" + str(assn[symbol]) + "\"."
         return DPLL(clauses, assn, model)
 
     # Check for unit clause
@@ -82,7 +83,7 @@ def all_clauses_satisfied(clauses):
     exist, then a satisfying assignment has been found. Otherwise
     not all clauses satisfied.
     """
-    if(len(clauses) > 0):
+    if(len(clauses) == 0):
         return True
     return False
 
@@ -118,12 +119,10 @@ def find_pure_symbol(clauses, assn, model):
     else:
         literal = "-" + symbol
         assn[symbol] = False
-    # Remove the symbol from the model.
-    model.remove(symbol)
 
     # Iterate through the list of clauses and remove any clause
     # having this literal.
-    clauses = [clause for clause in clauses if(literal not in clause)]
+    update_clauses_and_model_for_symbol(literal, clauses, assn, model)
 
     # Return the symbol.
     return symbol
@@ -162,7 +161,12 @@ def update_clauses_and_model_for_symbol(literal, clauses, assn, model):
     # Extract the symbol name
     symbol = literal[1:]
     # Remove any clauses that also has this variable.
-    clauses = [clause for clause in clauses if(literal not in clause)]
+    i = 0
+    while(i < len(clauses)):
+        if(literal in clauses[i]):
+            clauses.pop(i)
+        else:
+            i += 1
 
     # Update the assignment and model.
     if(literal_sign == "+"):
@@ -220,6 +224,4 @@ result = DPLL(initial_clauses, assignment, model)
 if(result is False):
     print "\n\n\nThese clauses are unsatisfiable."
 else:
-    print "\n\n\nThese clauses are satisfiable with assignment:"
-    for key in assignment:
-        print key + " = " + str(assignment[key])
+    print "\n\n\nThese clauses are satisfiable."

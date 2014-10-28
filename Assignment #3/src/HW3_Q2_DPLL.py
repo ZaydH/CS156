@@ -57,6 +57,7 @@ def DPLL(clauses, assn, model):
         return True
 
     # Assign symbol to true and false to see if it returns a value.
+    print "\nAssigning symbol \"" + symbol + "\" to \"True\" failed."
     step_numb += 1
     print "Step #" + str(step_numb) + ": Try assigning symbol \"" \
         + symbol + "\" to \"False\"."
@@ -208,11 +209,21 @@ for hole in xrange(1, 4):
             second_symbol = "-P" + str(j) + "," + str(hole)
             initial_clauses.append([first_symbol, second_symbol])
 
+print "The clauses are below.  A plus sign (\"+\") before a symbol name " \
+    + "indicates a positive literal.\nA minus sign (\"-\") before a symbol" \
+    + "name indicates a negated literal."
+print initial_clauses
+print "\n"
+
 # Build the model.
 model = []
 for pigeon in xrange(1, 5):
     for hole in xrange(1, 4):
         model.append("P" + str(pigeon) + "," + str(hole))
+
+print "The model is: ",
+print model
+print "\n"
 
 # Create the assignment
 assignment = {}
@@ -222,6 +233,6 @@ result = DPLL(initial_clauses, assignment, model)
 
 # Print the result.
 if(result is False):
-    print "\n\n\nThese clauses are unsatisfiable."
+    print "\nThese clauses are unsatisfiable."
 else:
-    print "\n\n\nThese clauses are satisfiable."
+    print "\nThese clauses are satisfiable."

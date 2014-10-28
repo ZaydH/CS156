@@ -12,7 +12,11 @@ step_numb = 0
 
 
 def DPLL(clauses, assn, model):
-
+    """
+    Recursive DPLL algorithm to determine satisfiability of a set of CNF
+    clauses.  It returns True if the clauses are satisfiable and
+    False otherwise.
+    """
     # Increment the step number
     global step_numb
     step_numb += 1
@@ -210,7 +214,7 @@ for hole in xrange(1, 4):
             initial_clauses.append([first_symbol, second_symbol])
 
 print "The clauses are below.  A plus sign (\"+\") before a symbol name " \
-    + "indicates a positive literal.\nA minus sign (\"-\") before a symbol" \
+    + "indicates a positive literal.\nA minus sign (\"-\") before a symbol " \
     + "name indicates a negated literal."
 print initial_clauses
 print "\n"
@@ -224,6 +228,10 @@ for pigeon in xrange(1, 5):
 print "The model is: ",
 print model
 print "\n"
+symbol = ""
+# temp_array = ["+" + symbol for symbol in model]
+# initial_clauses = []
+# initial_clauses.append(temp_array)
 
 # Create the assignment
 assignment = {}

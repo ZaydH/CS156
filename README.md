@@ -13,4 +13,4 @@ will try to update the documents in a reasonable time.
 
 Dr. Pollett is an exceptionally knowledgeable, friendly, and approachable professor.  I highly recommend him 
 and his course to all students who are serious about learning.  While his course is not easy and requires 
-a significant time investment in order to do well, in the end, it is more than worth it.  
+a significant time investment in order to do well, it is more than worth it in the end.  
